@@ -5,6 +5,8 @@ using Gtk;
 
 public partial class MainWindow : Gtk.Window
 {
+    public VBox rightSide = new VBox(false, 1);
+
     public MainWindow() : base(Gtk.WindowType.Toplevel)
     {
         Build();
@@ -15,37 +17,24 @@ public partial class MainWindow : Gtk.Window
         searchLabel.SetAlignment(0.5f, 1);
         ipVBox.Add(searchLabel);
 
-        TextView consoleBox = new TextView();
-        consoleBox.SetSizeRequest(300, 300);
-        consoleBox.Editable = false;
 
         Button btn1 = new Button("Settings");
-        Button btn2 = new Button("Cool button");
-        Button btn3 = new Button(Stock.Close);
-        //btn3.SetSizeRequest(100, 100);
-        btn3.Pressed += (obj, args) =>
-        {
-            Environment.Exit(1);
-        };
+        btn1.SetSizeRequest(100, 10);
         HBox buttonsRow = new HBox(true, 1);
         //Alignment hAllign = new Alignment(0, 0, 0, 0);
         buttonsRow.Add(btn1);
-        buttonsRow.Add(btn2);
-        buttonsRow.Add(btn3);
         //hBox.PackStart(hAllign, false, false, 1);
-        VBox rightSide = new VBox(false, 1);
+        
         rightSide.Add(buttonsRow);
-        rightSide.Add(consoleBox);
 
         HBox mainBox = new HBox(true, 2);
         mainBox.Add(ipVBox);
         mainBox.Add(rightSide);
 
         Add(mainBox);
-
-
-
+        
         ShowAll();
+        
     }
 
     protected void OnDeleteEvent(object sender, DeleteEventArgs a)
@@ -53,6 +42,8 @@ public partial class MainWindow : Gtk.Window
         Application.Quit();
         a.RetVal = true;
     }
+
+    
 }
 
 //Мусорка кода

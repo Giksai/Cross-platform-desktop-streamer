@@ -9,6 +9,7 @@ namespace DeskStreamer
         {
             Application.Init();
             MainWindow win = new MainWindow();
+            ConsoleLogic.SendMainWindowRef(win);
             win.Show();
             Application.Run();
         }

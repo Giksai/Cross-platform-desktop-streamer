@@ -1,0 +1,32 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
+using Gtk;
+
+namespace DeskStreamer
+{
+    static class ConsoleLogic
+    {
+        public static MainWindow main;
+
+        public static void WriteConsole(string text, Exception e = null)
+        {
+            if (e != null)
+                main.rightSide.Add(new Label("Error on " +
+                    DateTime.Now.ToShortDateString() + ": " +
+                    e.Message + "\n" + e.StackTrace + "\n" + text + "\n"));
+            else
+                main.rightSide.Add(new Label(text + "\n"));
+
+            main.ShowAll();
+
+        }
+
+        public static void SendMainWindowRef(MainWindow mainRef)
+        {
+            main = mainRef;
+        }
+
+    }
+}
