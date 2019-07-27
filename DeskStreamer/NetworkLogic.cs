@@ -139,7 +139,7 @@ namespace DeskStreamer
                     bytes = connectionSocket.Receive(data);
                 } while (connectionSocket.Available > 0);
                 object obj = Serializer.BytesToObj(data, bytes);
-                if (obj is ConnectionResponse) InitScreen(connectionSocket);
+                if (obj is ConnectionResponse) InitScreen();
             }
             catch(Exception e)
             {
@@ -149,22 +149,27 @@ namespace DeskStreamer
             }
             
         }
-        private static void InitScreen(Socket pipe)
+        private static void InitScreen()
         {
             try
             {
                 searchTask.Abort();
                 searchTask.Join();
+                //Thread.Sleep(2000);
+                Socket pipe = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                pipe.Bind(new IPEndPoint(localIP, 4578));
+                pipe.Listen(10);
+                Socket dataPipe = pipe.Accept();
                 StreamingWindow strWin = new StreamingWindow();
                 strWin.Show();
                 while (true)
                 {
                     int bytes = 0;
-                    byte[] data = new byte[pipe.ReceiveBufferSize];
+                    byte[] data = new byte[dataPipe.ReceiveBufferSize];
                     do
                     {
-                        bytes = pipe.Receive(data);
-                    } while (pipe.Available > 0);
+                        bytes = dataPipe.Receive(data);
+                    } while (dataPipe.Available > 0);
                     try
                     {
                         object imgData = Serializer.BytesToObj(data, bytes);
@@ -195,7 +200,7 @@ namespace DeskStreamer
             catch(Exception e)
             {
                 ConsoleLogic.WriteConsole("Error at getting stream", e);
-                InitScreen(pipe);
+                InitScreen();
             }
             
         }
@@ -256,10 +261,11 @@ namespace DeskStreamer
                     {
                         searchTask.Abort();
                         searchTask.Join();
+                        
                         ConsoleLogic.WriteConsole("Connection request from " +
                             (obj as ConnectionRequest).IPAdress);
                         incomingConnection.Send(Serializer.ObjectToBytes(new ConnectionResponse()));
-                        Thread thr1 = new Thread(()=>Stream(incomingConnection));
+                        Thread thr1 = new Thread(()=>Stream((obj as ConnectionRequest).IPAdress));
                         thr1.Start();
                     }
                 }
@@ -271,8 +277,24 @@ namespace DeskStreamer
             
         }
 
-        private static void Stream(Socket pipe)
+        private static void Stream(string ip)
         {
+            Thread.Sleep(1000);
+            Socket pipe = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            bool connected = false;
+            while(!connected)
+            {
+                try
+                {
+                    IAsyncResult result = pipe.BeginConnect(new IPEndPoint(
+                        IPAddress.Parse(ip), 4578), null, null);
+                    connected = result.AsyncWaitHandle.WaitOne(3000, true);
+                }
+                catch(Exception e)
+                {
+
+                }
+            }
             while(true)
             {
                 try
