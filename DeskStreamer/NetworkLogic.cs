@@ -40,8 +40,8 @@ namespace DeskStreamer
             nodeIpPart = sections[3];
         }
 
-
-        public static void Search() => new Task(InitSearch).Start();
+        private static Task searchTask = new Task(InitSearch);
+        public static void Search() => searchTask.Start();
         public static void Listen() => new Task(ListenLoop).Start();
 
         private static void SearchUnit(object nodeIpNumber)
@@ -153,6 +153,8 @@ namespace DeskStreamer
         {
             try
             {
+                searchTask.Dispose();
+                searchTask.Wait();
                 StreamingWindow strWin = new StreamingWindow();
                 strWin.Show();
                 while (true)
