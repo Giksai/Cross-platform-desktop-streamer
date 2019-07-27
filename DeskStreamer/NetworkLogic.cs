@@ -111,8 +111,17 @@ namespace DeskStreamer
             string connectIP = ((Gtk.Button)sender).Name;
             ConsoleLogic.WriteConsole("Connecting to " + connectIP);
             Socket connectionSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            connectionSocket.Connect(new IPEndPoint(IPAddress.Parse(connectIP), 6897));
-            connectionSocket.Send(Serializer.ObjectToBytes(new ConnectionRequest(localIP.ToString())));
+            try
+            {
+                connectionSocket.Connect(new IPEndPoint(IPAddress.Parse(connectIP), 6897));
+                connectionSocket.Send(Serializer.ObjectToBytes(new ConnectionRequest(localIP.ToString())));
+            }
+            catch(Exception e)
+            {
+                main.ipVBox.Remove((Gtk.Button)sender);
+                ConsoleLogic.WriteConsole("Lost connection with " + connectIP);
+            }
+            
         }
 
         private static void InitSearch()
