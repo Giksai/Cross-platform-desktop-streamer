@@ -163,29 +163,37 @@ namespace DeskStreamer
                     {
                         bytes = pipe.Receive(data);
                     } while (pipe.Available > 0);
-
-
-
-                    //Bitmap img = (Bitmap)new ImageConverter().ConvertTo(data, typeof(Bitmap));
-                    Image jpeg;
-                    using (Stream ms = new MemoryStream(data))
+                    try
                     {
-                        jpeg = Image.FromStream(ms);
-                    }
+                        object imgData = Serializer.BytesToObj(data, bytes);
+                        if (!(imgData is ImageStreamPart)) throw new Exception("Wrong data!");
+                        data = (imgData as ImageStreamPart).bitmap;
+                        //Bitmap img = (Bitmap)new ImageConverter().ConvertTo(data, typeof(Bitmap));
+                        Image jpeg;
+                        using (Stream ms = new MemoryStream(data))
+                        {
+                            jpeg = Image.FromStream(ms);
+                        }
 
-                    jpeg.Save("img.bmp");
-                    //using (FileStream str = new FileStream("img.bmp", FileMode.Create))
-                    //{
-                    //    str.Write(data, 0, data.Length);
-                    //    str.Flush();
-                    //}
-                    strWin.img.Pixbuf = new Gdk.Pixbuf("img.bmp");
-                    strWin.ShowAll();
+                        jpeg.Save("img.bmp");
+                        //using (FileStream str = new FileStream("img.bmp", FileMode.Create))
+                        //{
+                        //    str.Write(data, 0, data.Length);
+                        //    str.Flush();
+                        //}
+                        strWin.img.Pixbuf = new Gdk.Pixbuf("img.bmp");
+                        strWin.ShowAll();
+                    }
+                    catch(Exception e1)
+                    {
+                        ConsoleLogic.WriteConsole("Error at converting received data", e1);
+                    }
                 }
             }
             catch(Exception e)
             {
                 ConsoleLogic.WriteConsole("Error at getting stream", e);
+                InitScreen(pipe);
             }
             
         }
@@ -277,7 +285,7 @@ namespace DeskStreamer
                     {
                         memoryImage.Save(stream, System.Drawing.Imaging.ImageFormat.Bmp);
                         dataToSend = stream.ToArray();
-                        pipe.Send(dataToSend);
+                        pipe.Send(Serializer.ObjectToBytes(new ImageStreamPart(dataToSend)));
                     }
                     memoryImage.Dispose();
                     memoryGraphics.Dispose();

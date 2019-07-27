@@ -43,6 +43,10 @@ namespace DeskStreamer
     [Serializable]
     class ImageStreamPart
     {
-        byte[] bitmap;
+        public ImageStreamPart(byte[] img)
+        {
+            bitmap = img;
+        }
+        public byte[] bitmap;
     }
 }
