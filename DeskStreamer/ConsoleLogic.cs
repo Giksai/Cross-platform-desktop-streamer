@@ -12,14 +12,22 @@ namespace DeskStreamer
 
         public static void WriteConsole(string text, Exception e = null)
         {
-            if (e != null)
-                main.rightSide.Add(new Label("Error on " +
-                    DateTime.Now.ToShortDateString() + ": " +
-                    e.Message + "\n" + e.StackTrace + "\n" + text));
-            else
-                main.rightSide.Add(new Label(text));
+            try
+            {
+                if (e != null)
+                    main.rightSide.Add(new Label("Error on " +
+                        DateTime.Now.ToShortDateString() + ": " +
+                        e.Message + "\n" + e.StackTrace + "\n" + text));
+                else
+                    main.rightSide.Add(new Label(text));
 
-            main.ShowAll();
+                main.ShowAll();
+            }
+            catch
+            {
+
+            }
+            
         }
 
         public static void SendMainWindowRef(MainWindow mainRef)

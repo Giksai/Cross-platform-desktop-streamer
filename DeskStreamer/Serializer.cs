@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
 namespace DeskStreamer
@@ -7,24 +8,41 @@ namespace DeskStreamer
     {
         public static byte[] ObjectToBytes(object obj)
         {
-            BinaryFormatter formatter = new BinaryFormatter();
-            using (var ms = new MemoryStream())
+            try
             {
-                formatter.Serialize(ms, obj);
-                return ms.ToArray();
+                BinaryFormatter formatter = new BinaryFormatter();
+                using (var ms = new MemoryStream())
+                {
+                    formatter.Serialize(ms, obj);
+                    return ms.ToArray();
+                }
+            }
+            catch(Exception e)
+            {
+                ConsoleLogic.WriteConsole("Error at serializing", e);
+                return null;
             }
         }
 
         public static object BytesToObj(byte[] bytes, int size)
         {
-            BinaryFormatter formatter = new BinaryFormatter();
-            using (var ms = new MemoryStream())
+            try
             {
-                ms.Write(bytes, 0, bytes.Length);
-                ms.Seek(0, SeekOrigin.Begin);
-                var obj = formatter.Deserialize(ms);
-                return obj;
+                BinaryFormatter formatter = new BinaryFormatter();
+                using (var ms = new MemoryStream())
+                {
+                    ms.Write(bytes, 0, bytes.Length);
+                    ms.Seek(0, SeekOrigin.Begin);
+                    var obj = formatter.Deserialize(ms);
+                    return obj;
+                }
             }
+            catch(Exception e)
+            {
+                ConsoleLogic.WriteConsole("Error at deserealizing", e);
+                return null;
+            }
+            
         }
     }
 }

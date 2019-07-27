@@ -91,6 +91,7 @@ namespace DeskStreamer
                 catch(Exception e)
                 {
                     if(e.Message != "Button already present in list")
+
                     foreach (var child in main.ipVBox.AllChildren)
                         if (((Gtk.Button)child).Name == networkIpPart + (int)nodeIpNumber)
                         {
@@ -118,10 +119,12 @@ namespace DeskStreamer
         private static void ConnectTo(object sender, EventArgs args)
         {
             string connectIP = ((Gtk.Button)sender).Name;
-            ConsoleLogic.WriteConsole("Connecting to " + connectIP);
-            Socket connectionSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             try
             {
+               
+                ConsoleLogic.WriteConsole("Connecting to " + connectIP);
+                Socket connectionSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
                 IAsyncResult result = connectionSocket.BeginConnect(new IPEndPoint(
                         IPAddress.Parse(connectIP), 6897), null, null);
                 bool connected = result.AsyncWaitHandle.WaitOne(3000, true);
@@ -139,52 +142,67 @@ namespace DeskStreamer
 
         private static void InitSearch()
         {
-            while(true)
+            try
             {
-                for (int i = 1; i < 255; i++)
+                while (true)
                 {
-                    if (i == int.Parse(nodeIpPart)) continue;
-                    //Task.Run(() => SearchUnit(i));
-                    //Task tsk1 = new Task(() => SearchUnit(i));
-                    //tsk1.Start();
+                    for (int i = 1; i < 255; i++)
+                    {
+                        if (i == int.Parse(nodeIpPart)) continue;
+                        //Task.Run(() => SearchUnit(i));
+                        //Task tsk1 = new Task(() => SearchUnit(i));
+                        //tsk1.Start();
 
-                    Thread thr = new Thread(SearchUnit);
-                    thr.Name = i.ToString();
-                    thr.Start(i);
-                    Thread.Sleep(40);
+                        Thread thr = new Thread(SearchUnit);
+                        thr.Name = i.ToString();
+                        thr.Start(i);
+                        Thread.Sleep(40);
+                    }
+                    Thread.Sleep(1000);
+                    main.ShowAll();
                 }
-                Thread.Sleep(1000);
-                main.ShowAll();
+            }
+            catch(Exception e)
+            {
+                ConsoleLogic.WriteConsole("Error at initSearch", e);
             }
         }
 
         private static void ListenLoop()
         {
-            listener = new Socket(AddressFamily.InterNetwork, 
-                SocketType.Stream, ProtocolType.Tcp);
-            listener.Bind(new IPEndPoint(localIP, 6897));
-            listener.Listen(10);
-
-            BinaryFormatter formatter = new BinaryFormatter();
-            while(true)
+            try
             {
-                incomingConnection = listener.Accept();
-                int bytes = 0;
-                byte[] data = new byte[incomingConnection.ReceiveBufferSize];
-                do
-                {
-                    bytes = incomingConnection.Receive(data);
-                } while (incomingConnection.Available > 0);
+                listener = new Socket(AddressFamily.InterNetwork,
+                SocketType.Stream, ProtocolType.Tcp);
+                listener.Bind(new IPEndPoint(localIP, 6897));
+                listener.Listen(10);
 
-                object obj = Serializer.BytesToObj(data, bytes);
-                if (obj is SearchRequest)
-                    incomingConnection.Send(Serializer.ObjectToBytes(new SearchResponse(localIP.ToString(), Dns.GetHostName())));
-                if(obj is ConnectionRequest)
+                BinaryFormatter formatter = new BinaryFormatter();
+                while (true)
                 {
-                    ConsoleLogic.WriteConsole("Connection request from " +
-                        (obj as ConnectionRequest).IPAdress);
+                    incomingConnection = listener.Accept();
+                    int bytes = 0;
+                    byte[] data = new byte[incomingConnection.ReceiveBufferSize];
+                    do
+                    {
+                        bytes = incomingConnection.Receive(data);
+                    } while (incomingConnection.Available > 0);
+
+                    object obj = Serializer.BytesToObj(data, bytes);
+                    if (obj is SearchRequest)
+                        incomingConnection.Send(Serializer.ObjectToBytes(new SearchResponse(localIP.ToString(), Dns.GetHostName())));
+                    if (obj is ConnectionRequest)
+                    {
+                        ConsoleLogic.WriteConsole("Connection request from " +
+                            (obj as ConnectionRequest).IPAdress);
+                    }
                 }
             }
+            catch(Exception e)
+            {
+                ConsoleLogic.WriteConsole("error at listenLoop", e);
+            }
+            
         }
 
         public static void GetIPVBoxRef(MainWindow mainRef) => main = mainRef;
