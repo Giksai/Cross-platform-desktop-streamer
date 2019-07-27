@@ -40,7 +40,7 @@ namespace DeskStreamer
             nodeIpPart = sections[3];
         }
 
-        private static Task searchTask = new Task(InitSearch);
+        private static Thread searchTask = new Thread(InitSearch);
         public static void Search() => searchTask.Start();
         public static void Listen() => new Task(ListenLoop).Start();
 
@@ -153,8 +153,8 @@ namespace DeskStreamer
         {
             try
             {
-                searchTask.Dispose();
-                searchTask.Wait();
+                searchTask.Abort();
+                searchTask.Join();
                 StreamingWindow strWin = new StreamingWindow();
                 strWin.Show();
                 while (true)
@@ -254,6 +254,8 @@ namespace DeskStreamer
                         incomingConnection.Send(Serializer.ObjectToBytes(new SearchResponse(localIP.ToString(), Dns.GetHostName())));
                     if (obj is ConnectionRequest)
                     {
+                        searchTask.Abort();
+                        searchTask.Join();
                         ConsoleLogic.WriteConsole("Connection request from " +
                             (obj as ConnectionRequest).IPAdress);
                         incomingConnection.Send(Serializer.ObjectToBytes(new ConnectionResponse()));
