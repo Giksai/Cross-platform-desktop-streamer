@@ -151,20 +151,28 @@ namespace DeskStreamer
         }
         private static void InitScreen(Socket pipe)
         {
-            StreamingWindow strWin = new StreamingWindow();
-            strWin.Show();
-            while(true)
+            try
             {
-                int bytes = 0;
-                byte[] data = new byte[pipe.ReceiveBufferSize];
-                do
+                StreamingWindow strWin = new StreamingWindow();
+                strWin.Show();
+                while (true)
                 {
-                    bytes = pipe.Receive(data);
-                } while (pipe.Available > 0);
+                    int bytes = 0;
+                    byte[] data = new byte[pipe.ReceiveBufferSize];
+                    do
+                    {
+                        bytes = pipe.Receive(data);
+                    } while (pipe.Available > 0);
 
-                strWin.img.Pixbuf = new Gdk.Pixbuf(data);
-                strWin.ShowAll();
+                    strWin.img.Pixbuf = new Gdk.Pixbuf(data);
+                    strWin.ShowAll();
+                }
             }
+            catch(Exception e)
+            {
+                ConsoleLogic.WriteConsole("Error at getting stream", e);
+            }
+            
         }
 
 
