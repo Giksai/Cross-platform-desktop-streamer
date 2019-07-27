@@ -163,11 +163,21 @@ namespace DeskStreamer
                     {
                         bytes = pipe.Receive(data);
                     } while (pipe.Available > 0);
-                    using (FileStream str = new FileStream("img.bmp", FileMode.Create))
+
+
+                    Bitmap img ;
+
+                    using (var ms = new MemoryStream(data))
                     {
-                        str.Write(data, 0, data.Length);
-                        str.Flush();
+                        img = new Bitmap(ms);
                     }
+
+                    img.Save("img.bmp");
+                    //using (FileStream str = new FileStream("img.bmp", FileMode.Create))
+                    //{
+                    //    str.Write(data, 0, data.Length);
+                    //    str.Flush();
+                    //}
                     strWin.img.Pixbuf = new Gdk.Pixbuf("img.bmp");
                     strWin.ShowAll();
                 }
@@ -260,14 +270,23 @@ namespace DeskStreamer
                     memoryGraphics.CopyFromScreen(0, 0, 0, 0, s);
 
                     memoryImage.Save("img.bmp");
+                    //
+                    byte[] dataToSend;
+                    using (var stream = new MemoryStream())
+                    {
+                        memoryImage.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+                        dataToSend = stream.ToArray();
+                    }
 
-                    pipe.Send(Serializer.ObjectToBytes(
-                        new ImageConverter().ConvertTo(
-                            memoryImage, 
-                            typeof(byte[]))));
+                    pipe.Send(dataToSend);
                     memoryImage.Dispose();
                     memoryGraphics.Dispose();
                     return;
+
+                    //Serializer.ObjectToBytes(
+                    //    new ImageConverter().ConvertTo(
+                    //        memoryImage,
+                    //        typeof(byte[])))
                 }
                 catch(Exception e)
                 {
