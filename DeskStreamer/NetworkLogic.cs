@@ -276,10 +276,9 @@ namespace DeskStreamer
                     using (var stream = new MemoryStream())
                     {
                         memoryImage.Save(stream, System.Drawing.Imaging.ImageFormat.Bmp);
-                        dataToSend = stream.GetBuffer();
+                        dataToSend = stream.ToArray();
+                        pipe.Send(dataToSend);
                     }
-
-                    pipe.Send(dataToSend);
                     memoryImage.Dispose();
                     memoryGraphics.Dispose();
                     return;
