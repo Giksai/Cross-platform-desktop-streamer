@@ -29,11 +29,13 @@ namespace DeskStreamer
         }
 
         private static string networkIpPart;
+        private static string nodeIpPart;
 
         static NetworkLogic()
         {
             string[] sections = localIP.ToString().Split('.');
             networkIpPart = sections[0] + '.' + sections[1] + '.' + sections[2] + '.';
+            nodeIpPart = sections[3];
         }
 
 
@@ -107,6 +109,7 @@ namespace DeskStreamer
         {
             for (int i = 1; i < 255; i++)
             {
+                if (i == int.Parse(nodeIpPart)) continue;
                 Thread thr = new Thread(SearchUnit);
                 thr.Name = i.ToString();
                 thr.Start();
