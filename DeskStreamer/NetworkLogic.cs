@@ -77,7 +77,7 @@ namespace DeskStreamer
                         {
                             Gtk.Button connectBtn = new Gtk.Button("Connect to " + sr.PCName + " \n " + sr.IPAdress);
                             connectBtn.Name = sr.IPAdress;
-                            connectBtn.Clicked += ConnectTo;
+                            connectBtn.Clicked += (sender, args)=>new Thread(()=>ConnectTo(sender, args)).Start();
                             foreach(var child in main.ipVBox.AllChildren)
                             {
                                 if (((Gtk.Button)child).Name == sr.IPAdress)
@@ -176,20 +176,20 @@ namespace DeskStreamer
                         if (!(imgData is ImageStreamPart)) throw new Exception("Wrong data!");
                         data = (imgData as ImageStreamPart).bitmap;
                         //Bitmap img = (Bitmap)new ImageConverter().ConvertTo(data, typeof(Bitmap));
-                        Image jpeg;
+                        Image bmp;
                         using (Stream ms = new MemoryStream(data))
                         {
-                            jpeg = Image.FromStream(ms);
+                            bmp = Image.FromStream(ms);
                         }
-
-                        jpeg.Save("img.bmp");
+                        strWin.img.Pixbuf = new Gdk.Pixbuf(data);
+                        strWin.ShowAll();
+                        //bmp.Save("img.bmp");
                         //using (FileStream str = new FileStream("img.bmp", FileMode.Create))
                         //{
                         //    str.Write(data, 0, data.Length);
                         //    str.Flush();
                         //}
-                        strWin.img.Pixbuf = new Gdk.Pixbuf("img.bmp");
-                        strWin.ShowAll();
+                        
                     }
                     catch(Exception e1)
                     {
@@ -299,8 +299,8 @@ namespace DeskStreamer
             {
                 try
                 {
-                    Bitmap memoryImage = new Bitmap(800, 600);
-                    Size s = new Size(800, 600);
+                    Bitmap memoryImage = new Bitmap(40, 40);
+                    Size s = new Size(40, 40);
                     Graphics memoryGraphics = Graphics.FromImage(memoryImage);
                     memoryGraphics.CopyFromScreen(0, 0, 0, 0, s);
 
