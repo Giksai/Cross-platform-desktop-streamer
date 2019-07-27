@@ -13,11 +13,6 @@ public partial class MainWindow : Gtk.Window
         Build();
         ModifyBg(StateType.Normal, new Gdk.Color(50, 50, 50));
         //Design
-        VBox ipVBox = new VBox(true, 5);
-        Label searchLabel = new Label("searching...");
-        searchLabel.SetAlignment(0.5f, 1);
-        ipVBox.Add(searchLabel);
-
 
         Button btn1 = new Button("Settings");
         btn1.SetSizeRequest(100, 10);

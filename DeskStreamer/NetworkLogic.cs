@@ -15,7 +15,7 @@ namespace DeskStreamer
         private static Socket outgoingConnection;
         private static Socket listener;
         private static MainWindow main;
-        private static Semaphore semaphore = new Semaphore(3, 3);
+        private static Semaphore semaphore = new Semaphore(50, 50);
 
         private static IPAddress localIP
         {
@@ -40,18 +40,22 @@ namespace DeskStreamer
         public static void Search() => new Task(InitSearch).Start();
         public static void Listen() => new Task(ListenLoop).Start();
 
-        private static void SearchUnit(object ipPosition)
+        private static void SearchUnit()
         {
             try
             {
-                int position = (int)ipPosition;
+                int position = int.Parse(Thread.CurrentThread.Name);
                 semaphore.WaitOne();
-                ConsoleLogic.WriteConsole("Accessing " + ipPosition);
+                //ConsoleLogic.WriteConsole("Accessing " + position);
                 Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 socket.SendTimeout = 2;
                 try
                 {
-                    socket.Connect(new IPEndPoint(IPAddress.Parse(networkIpPart + ipPosition), 6897));
+                    IAsyncResult result = socket.BeginConnect(new IPEndPoint(
+                        IPAddress.Parse(networkIpPart + position), 6897), null, null);
+                    bool connected = result.AsyncWaitHandle.WaitOne(3000, true);
+                    //socket.Connect(new IPEndPoint(IPAddress.Parse(networkIpPart + ipPosition), 6897));
+                    if (!connected) throw new Exception();
                     socket.Send(Serializer.ObjectToBytes(new SearchRequest()));
                     byte[] data = new byte[socket.ReceiveBufferSize];
                     int bytes = 0;
@@ -63,16 +67,20 @@ namespace DeskStreamer
                     if(obj is SearchResponse)
                     {
                         SearchResponse sr = obj as SearchResponse;
-                        lock(main.ipVBox)
+                        ConsoleLogic.WriteConsole("Got search response from " + sr.IPAdress);
+                        lock (main.ipVBox)
                         {
-                            main.ipVBox.Add(new Gtk.Label(sr.IPAdress + "\n" + sr.PCName));
+                            Gtk.Button connectBtn = new Gtk.Button("Connect to " + sr.PCName + " \n " + sr.IPAdress);
+                            connectBtn.Name = sr.IPAdress;
+                            connectBtn.Clicked += ConnectTo;
+                            main.ipVBox.Add(connectBtn);
                             main.ShowAll();
                         }
                     }
                 }
                 catch
                 {
-                    ConsoleLogic.WriteConsole("Failed accessing " + networkIpPart + ipPosition);
+                    //ConsoleLogic.WriteConsole("Failed accessing " + networkIpPart + position);
                 }
                 finally
                 {
@@ -89,12 +97,22 @@ namespace DeskStreamer
             }
         }
 
+        private static void ConnectTo(object sender, EventArgs args)
+        {
+            string connectIP = ((Gtk.Button)sender).Name;
+            ConsoleLogic.WriteConsole("Connecting to " + connectIP);
+        }
+
         private static void InitSearch()
         {
             for (int i = 1; i < 255; i++)
             {
-                new ParameterizedThreadStart(SearchUnit).Invoke(i);
+                Thread thr = new Thread(SearchUnit);
+                thr.Name = i.ToString();
+                thr.Start();
+                Thread.Sleep(50);
             }
+                
         }
 
         private static void ListenLoop()
