@@ -259,7 +259,7 @@ namespace DeskStreamer
                     Graphics memoryGraphics = Graphics.FromImage(memoryImage);
                     memoryGraphics.CopyFromScreen(0, 0, 0, 0, s);
 
-                    memoryImage.Save("img.png");
+                    memoryImage.Save("img.bmp");
 
                     pipe.Send(Serializer.ObjectToBytes(
                         new ImageConverter().ConvertTo(
@@ -267,6 +267,7 @@ namespace DeskStreamer
                             typeof(byte[]))));
                     memoryImage.Dispose();
                     memoryGraphics.Dispose();
+                    return;
                 }
                 catch(Exception e)
                 {
