@@ -115,7 +115,7 @@ namespace DeskStreamer
             {
                 IAsyncResult result = connectionSocket.BeginConnect(new IPEndPoint(
                         IPAddress.Parse(connectIP), 6897), null, null);
-                bool connected = result.AsyncWaitHandle.WaitOne(3000, true);
+                bool connected = result.AsyncWaitHandle.WaitOne(1000, true);
                 if (!connected) throw new Exception();
                 connectionSocket.Send(Serializer.ObjectToBytes(new ConnectionRequest(localIP.ToString())));
             }
@@ -135,9 +135,9 @@ namespace DeskStreamer
                 Thread thr = new Thread(SearchUnit);
                 thr.Name = i.ToString();
                 thr.Start();
-                Thread.Sleep(50);
+                Thread.Sleep(10);
             }
-            Thread.Sleep(2000);
+            Thread.Sleep(1000);
             InitSearch();
         }
 
