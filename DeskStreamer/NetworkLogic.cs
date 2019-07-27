@@ -313,6 +313,7 @@ namespace DeskStreamer
                     memoryImage.Dispose();
                     memoryGraphics.Dispose();
                     Thread.Sleep(30);
+                    //
                     //Serializer.ObjectToBytes(
                     //    new ImageConverter().ConvertTo(
                     //        memoryImage,
