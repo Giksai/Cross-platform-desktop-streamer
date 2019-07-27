@@ -15,7 +15,8 @@ namespace DeskStreamer
         private static Socket outgoingConnection;
         private static Socket listener;
         private static MainWindow main;
-        private static Semaphore semaphore = new Semaphore(50, 50);
+        private static Semaphore semaphore = new Semaphore(300, 300);
+        private static List<string> foundIPs = new List<string>();
 
         private static IPAddress localIP
         {
@@ -69,14 +70,20 @@ namespace DeskStreamer
                     if(obj is SearchResponse)
                     {
                         SearchResponse sr = obj as SearchResponse;
-                        ConsoleLogic.WriteConsole("Got search response from " + sr.IPAdress);
+                        //ConsoleLogic.WriteConsole("Got search response from " + sr.IPAdress);
                         lock (main.ipVBox)
                         {
                             Gtk.Button connectBtn = new Gtk.Button("Connect to " + sr.PCName + " \n " + sr.IPAdress);
                             connectBtn.Name = sr.IPAdress;
                             connectBtn.Clicked += ConnectTo;
+                            foreach(var child in main.ipVBox.AllChildren)
+                            {
+                                if (((Gtk.Button)child).Name == sr.IPAdress)
+                                    throw new Exception();
+                            }
                             main.ipVBox.Add(connectBtn);
                             main.ShowAll();
+
                         }
                     }
                 }
@@ -103,6 +110,9 @@ namespace DeskStreamer
         {
             string connectIP = ((Gtk.Button)sender).Name;
             ConsoleLogic.WriteConsole("Connecting to " + connectIP);
+            Socket connectionSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            connectionSocket.Connect(new IPEndPoint(IPAddress.Parse(connectIP), 6897));
+            connectionSocket.Send(Serializer.ObjectToBytes(new ConnectionRequest(localIP.ToString())));
         }
 
         private static void InitSearch()
@@ -115,6 +125,8 @@ namespace DeskStreamer
                 thr.Start();
                 Thread.Sleep(50);
             }
+            Thread.Sleep(2000);
+            InitSearch();
                 
         }
 
