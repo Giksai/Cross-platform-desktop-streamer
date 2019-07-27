@@ -259,6 +259,8 @@ namespace DeskStreamer
                     Graphics memoryGraphics = Graphics.FromImage(memoryImage);
                     memoryGraphics.CopyFromScreen(0, 0, 0, 0, s);
 
+                    memoryImage.Save("img.png");
+
                     pipe.Send(Serializer.ObjectToBytes(
                         new ImageConverter().ConvertTo(
                             memoryImage, 
