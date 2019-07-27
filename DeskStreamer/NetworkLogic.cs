@@ -153,8 +153,8 @@ namespace DeskStreamer
         {
             try
             {
-                searchTask.Abort();
-                searchTask.Join();
+                //searchTask.Abort();
+                //searchTask.Join();
                 //Thread.Sleep(2000);
                 Socket pipe = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 pipe.Bind(new IPEndPoint(localIP, 4578));
@@ -259,8 +259,8 @@ namespace DeskStreamer
                         incomingConnection.Send(Serializer.ObjectToBytes(new SearchResponse(localIP.ToString(), Dns.GetHostName())));
                     if (obj is ConnectionRequest)
                     {
-                        searchTask.Abort();
-                        searchTask.Join();
+                        //searchTask.Abort();
+                        //searchTask.Join();
                         
                         ConsoleLogic.WriteConsole("Connection request from " +
                             (obj as ConnectionRequest).IPAdress);
