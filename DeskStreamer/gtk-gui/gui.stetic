@@ -13,4 +13,13 @@
       <placeholder />
     </child>
   </widget>
+  <widget class="Gtk.Window" id="StreamingWindow" design-size="400 300">
+    <property name="MemberName" />
+    <property name="Title" translatable="yes">StreamingWindow</property>
+    <property name="WindowPosition">CenterOnParent</property>
+    <signal name="DeleteEvent" handler="OnDeleteEvent" />
+    <child>
+      <placeholder />
+    </child>
+  </widget>
 </stetic-interface>

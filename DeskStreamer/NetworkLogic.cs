@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Net;
+using System.Drawing;
 
 namespace DeskStreamer
 {
@@ -130,6 +131,15 @@ namespace DeskStreamer
                 bool connected = result.AsyncWaitHandle.WaitOne(3000, true);
                 if (!connected) throw new Exception();
                 connectionSocket.Send(Serializer.ObjectToBytes(new ConnectionRequest(localIP.ToString())));
+                //listen
+                byte[] data = new byte[connectionSocket.ReceiveBufferSize];
+                int bytes = 0;
+                do
+                {
+                    bytes = connectionSocket.Receive(data);
+                } while (connectionSocket.Available > 0);
+                object obj = Serializer.BytesToObj(data, bytes);
+                if (obj is ConnectionResponse) InitScreen(connectionSocket);
             }
             catch(Exception e)
             {
@@ -139,6 +149,24 @@ namespace DeskStreamer
             }
             
         }
+        private static void InitScreen(Socket pipe)
+        {
+            StreamingWindow strWin = new StreamingWindow();
+            strWin.Show();
+            while(true)
+            {
+                int bytes = 0;
+                byte[] data = new byte[pipe.ReceiveBufferSize];
+                do
+                {
+                    bytes = pipe.Receive(data);
+                } while (pipe.Available > 0);
+
+                strWin.img.Pixbuf = new Gdk.Pixbuf(data);
+                strWin.ShowAll();
+            }
+        }
+
 
         private static void InitSearch()
         {
@@ -195,6 +223,9 @@ namespace DeskStreamer
                     {
                         ConsoleLogic.WriteConsole("Connection request from " +
                             (obj as ConnectionRequest).IPAdress);
+                        incomingConnection.Send(Serializer.ObjectToBytes(new ConnectionResponse()));
+                        Thread thr1 = new Thread(()=>Stream(incomingConnection));
+                        thr1.Start();
                     }
                 }
             }
@@ -203,6 +234,24 @@ namespace DeskStreamer
                 ConsoleLogic.WriteConsole("error at listenLoop", e);
             }
             
+        }
+
+        private static void Stream(Socket pipe)
+        {
+            while(true)
+            {
+                try
+                {
+                    pipe.Send(Serializer.ObjectToBytes(
+                        new ImageConverter().ConvertTo(
+                            new Bitmap(1920, 1080), 
+                            typeof(byte[]))));
+                }
+                catch(Exception e)
+                {
+                    ConsoleLogic.WriteConsole("Error at sending image", e);
+                }
+            }
         }
 
         public static void GetIPVBoxRef(MainWindow mainRef) => main = mainRef;

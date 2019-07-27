@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Drawing;
 
 namespace DeskStreamer
 {
@@ -13,6 +14,12 @@ namespace DeskStreamer
         {
             this.IPAdress = IPAdress;
         }
+    }
+
+    [Serializable]
+    class ConnectionResponse
+    {
+
     }
 
     [Serializable]
@@ -36,6 +43,6 @@ namespace DeskStreamer
     [Serializable]
     class ImageStreamPart
     {
-
+        byte[] bitmap;
     }
 }
