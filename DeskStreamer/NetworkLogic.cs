@@ -15,7 +15,7 @@ namespace DeskStreamer
         private static Socket outgoingConnection;
         private static Socket listener;
         private static MainWindow main;
-        private static Semaphore semaphore = new Semaphore(100, 100);
+        //private static Semaphore semaphore = new Semaphore(100, 100);
         private static List<string> foundIPs = new List<string>();
 
         private static IPAddress localIP
@@ -48,7 +48,7 @@ namespace DeskStreamer
             try
             {
                 int position = int.Parse(Thread.CurrentThread.Name);
-                semaphore.WaitOne();
+                //semaphore.WaitOne();
                 //ConsoleLogic.WriteConsole("Accessing " + position);
                 Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 socket.SendTimeout = 2;
@@ -102,7 +102,7 @@ namespace DeskStreamer
             }
             finally
             {
-                semaphore.Release();
+                //semaphore.Release();
             }
         }
 
@@ -139,7 +139,6 @@ namespace DeskStreamer
             }
             Thread.Sleep(2000);
             InitSearch();
-                
         }
 
         private static void ListenLoop()
