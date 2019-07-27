@@ -6,6 +6,7 @@ using Gtk;
 public partial class MainWindow : Gtk.Window
 {
     public VBox rightSide = new VBox(false, 1);
+    public VBox ipVBox = new VBox(true, 5);
 
     public MainWindow() : base(Gtk.WindowType.Toplevel)
     {
@@ -24,9 +25,16 @@ public partial class MainWindow : Gtk.Window
         //Alignment hAllign = new Alignment(0, 0, 0, 0);
         buttonsRow.Add(btn1);
         //hBox.PackStart(hAllign, false, false, 1);
-        
         rightSide.Add(buttonsRow);
+        //---
+        Label lb1 = new Label("123");
+        Label lb2 = new Label("345");
+        rightSide.Add(lb1);
+        rightSide.Add(lb2);
+        //---
+       
 
+    
         HBox mainBox = new HBox(true, 2);
         mainBox.Add(ipVBox);
         mainBox.Add(rightSide);

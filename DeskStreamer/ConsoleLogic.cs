@@ -15,12 +15,11 @@ namespace DeskStreamer
             if (e != null)
                 main.rightSide.Add(new Label("Error on " +
                     DateTime.Now.ToShortDateString() + ": " +
-                    e.Message + "\n" + e.StackTrace + "\n" + text + "\n"));
+                    e.Message + "\n" + e.StackTrace + "\n" + text));
             else
-                main.rightSide.Add(new Label(text + "\n"));
+                main.rightSide.Add(new Label(text));
 
             main.ShowAll();
-
         }
 
         public static void SendMainWindowRef(MainWindow mainRef)
