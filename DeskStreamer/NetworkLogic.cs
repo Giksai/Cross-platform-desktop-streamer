@@ -257,7 +257,7 @@ namespace DeskStreamer
 
                     pipe.Send(Serializer.ObjectToBytes(
                         new ImageConverter().ConvertTo(
-                            new Bitmap(1920, 1080), 
+                            new Bitmap(800, 600), 
                             typeof(byte[]))));
                 }
                 catch(Exception e)
