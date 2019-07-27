@@ -43,11 +43,12 @@ namespace DeskStreamer
         public static void Search() => new Task(InitSearch).Start();
         public static void Listen() => new Task(ListenLoop).Start();
 
-        private static void SearchUnit()
+        private static void SearchUnit(object nodeIpNumber)
         {
             try
             {
-                int position = int.Parse(Thread.CurrentThread.Name);
+                main.currIP.Text = networkIpPart + (int)nodeIpNumber;
+                main.currIP.Show();
                 //semaphore.WaitOne();
                 //ConsoleLogic.WriteConsole("Accessing " + position);
                 Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -55,8 +56,8 @@ namespace DeskStreamer
                 try
                 {
                     IAsyncResult result = socket.BeginConnect(new IPEndPoint(
-                        IPAddress.Parse(networkIpPart + position), 6897), null, null);
-                    bool connected = result.AsyncWaitHandle.WaitOne(3000, true);
+                        IPAddress.Parse(networkIpPart + (int)nodeIpNumber), 6897), null, null);
+                    bool connected = result.AsyncWaitHandle.WaitOne(1000, true);
                     //socket.Connect(new IPEndPoint(IPAddress.Parse(networkIpPart + ipPosition), 6897));
                     if (!connected) throw new Exception();
                     socket.Send(Serializer.ObjectToBytes(new SearchRequest()));
@@ -115,7 +116,7 @@ namespace DeskStreamer
             {
                 IAsyncResult result = connectionSocket.BeginConnect(new IPEndPoint(
                         IPAddress.Parse(connectIP), 6897), null, null);
-                bool connected = result.AsyncWaitHandle.WaitOne(1000, true);
+                bool connected = result.AsyncWaitHandle.WaitOne(3000, true);
                 if (!connected) throw new Exception();
                 connectionSocket.Send(Serializer.ObjectToBytes(new ConnectionRequest(localIP.ToString())));
             }
@@ -129,16 +130,22 @@ namespace DeskStreamer
 
         private static void InitSearch()
         {
-            for (int i = 1; i < 255; i++)
+            while(true)
             {
-                if (i == int.Parse(nodeIpPart)) continue;
-                Thread thr = new Thread(SearchUnit);
-                thr.Name = i.ToString();
-                thr.Start();
-                Thread.Sleep(10);
+                for (int i = 1; i < 255; i++)
+                {
+                    if (i == int.Parse(nodeIpPart)) continue;
+                    //Task.Run(() => SearchUnit(i));
+                    //Task tsk1 = new Task(() => SearchUnit(i));
+                    //tsk1.Start();
+
+                    Thread thr = new Thread(SearchUnit);
+                    thr.Name = i.ToString();
+                    thr.Start(i);
+                    Thread.Sleep(40);
+                }
+                Thread.Sleep(1000);
             }
-            Thread.Sleep(1000);
-            InitSearch();
         }
 
         private static void ListenLoop()

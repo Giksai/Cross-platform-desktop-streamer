@@ -7,6 +7,7 @@ public partial class MainWindow : Gtk.Window
 {
     public VBox rightSide = new VBox(false, 1);
     public VBox ipVBox = new VBox(true, 5);
+    public Label currIP = new Label("0.0.0.0");
 
     public MainWindow() : base(Gtk.WindowType.Toplevel)
     {
@@ -21,6 +22,7 @@ public partial class MainWindow : Gtk.Window
         buttonsRow.Add(btn1);
         //hBox.PackStart(hAllign, false, false, 1);
         rightSide.Add(buttonsRow);
+        rightSide.Add(currIP);
     
         HBox mainBox = new HBox(true, 2);
         mainBox.Add(ipVBox);
