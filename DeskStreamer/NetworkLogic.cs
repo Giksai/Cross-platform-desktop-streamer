@@ -163,8 +163,12 @@ namespace DeskStreamer
                     {
                         bytes = pipe.Receive(data);
                     } while (pipe.Available > 0);
-
-                    strWin.img.Pixbuf = new Gdk.Pixbuf(data);
+                    using (FileStream str = new FileStream("img.bmp", FileMode.Create))
+                    {
+                        str.Write(data, 0, data.Length);
+                        str.Flush();
+                    }
+                    strWin.img.Pixbuf = new Gdk.Pixbuf("img.bmp");
                     strWin.ShowAll();
                 }
             }
@@ -250,6 +254,7 @@ namespace DeskStreamer
             {
                 try
                 {
+
                     pipe.Send(Serializer.ObjectToBytes(
                         new ImageConverter().ConvertTo(
                             new Bitmap(1920, 1080), 
