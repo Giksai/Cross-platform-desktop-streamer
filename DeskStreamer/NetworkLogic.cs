@@ -95,6 +95,7 @@ namespace DeskStreamer
                         if (((Gtk.Button)child).Name == networkIpPart + (int)nodeIpNumber)
                         {
                             main.ipVBox.Remove((Gtk.Button)child);
+                                main.ipVBox.Show();
                             ConsoleLogic.WriteConsole("Lost connection with " + networkIpPart + (int)nodeIpNumber);
                         }
                     //ConsoleLogic.WriteConsole("Failed accessing " + networkIpPart + position);
@@ -130,6 +131,7 @@ namespace DeskStreamer
             catch(Exception e)
             {
                 main.ipVBox.Remove((Gtk.Button)sender);
+                main.ipVBox.Show();
                 ConsoleLogic.WriteConsole("Lost connection with " + connectIP);
             }
             
