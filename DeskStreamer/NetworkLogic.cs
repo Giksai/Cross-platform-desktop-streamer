@@ -15,7 +15,7 @@ namespace DeskStreamer
         private static Socket outgoingConnection;
         private static Socket listener;
         private static MainWindow main;
-        private static Semaphore semaphore = new Semaphore(300, 300);
+        private static Semaphore semaphore = new Semaphore(100, 100);
         private static List<string> foundIPs = new List<string>();
 
         private static IPAddress localIP
@@ -113,7 +113,10 @@ namespace DeskStreamer
             Socket connectionSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             try
             {
-                connectionSocket.Connect(new IPEndPoint(IPAddress.Parse(connectIP), 6897));
+                IAsyncResult result = connectionSocket.BeginConnect(new IPEndPoint(
+                        IPAddress.Parse(connectIP), 6897), null, null);
+                bool connected = result.AsyncWaitHandle.WaitOne(3000, true);
+                if (!connected) throw new Exception();
                 connectionSocket.Send(Serializer.ObjectToBytes(new ConnectionRequest(localIP.ToString())));
             }
             catch(Exception e)
