@@ -165,20 +165,21 @@ namespace DeskStreamer
                     } while (pipe.Available > 0);
 
 
-                    Bitmap img ;
 
-                    using (var ms = new MemoryStream(data))
+                    //Bitmap img = (Bitmap)new ImageConverter().ConvertTo(data, typeof(Bitmap));
+                    Image jpeg;
+                    using (Stream ms = new MemoryStream(data))
                     {
-                        img = new Bitmap(ms);
+                        jpeg = Image.FromStream(ms);
                     }
 
-                    img.Save("img.bmp");
+                    jpeg.Save("img.jpeg");
                     //using (FileStream str = new FileStream("img.bmp", FileMode.Create))
                     //{
                     //    str.Write(data, 0, data.Length);
                     //    str.Flush();
                     //}
-                    strWin.img.Pixbuf = new Gdk.Pixbuf("img.bmp");
+                    strWin.img.Pixbuf = new Gdk.Pixbuf("img.jpeg");
                     strWin.ShowAll();
                 }
             }
@@ -274,8 +275,8 @@ namespace DeskStreamer
                     byte[] dataToSend;
                     using (var stream = new MemoryStream())
                     {
-                        memoryImage.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
-                        dataToSend = stream.ToArray();
+                        memoryImage.Save(stream, System.Drawing.Imaging.ImageFormat.Jpeg);
+                        dataToSend = stream.GetBuffer();
                     }
 
                     pipe.Send(dataToSend);
