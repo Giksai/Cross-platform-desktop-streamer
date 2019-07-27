@@ -254,11 +254,17 @@ namespace DeskStreamer
             {
                 try
                 {
+                    Bitmap memoryImage = new Bitmap(800, 600);
+                    Size s = new Size(800, 600);
+                    Graphics memoryGraphics = Graphics.FromImage(memoryImage);
+                    memoryGraphics.CopyFromScreen(0, 0, 0, 0, s);
 
                     pipe.Send(Serializer.ObjectToBytes(
                         new ImageConverter().ConvertTo(
-                            new Bitmap(800, 600), 
+                            memoryImage, 
                             typeof(byte[]))));
+                    memoryImage.Dispose();
+                    memoryGraphics.Dispose();
                 }
                 catch(Exception e)
                 {
