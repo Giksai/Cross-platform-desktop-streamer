@@ -80,7 +80,7 @@ namespace DeskStreamer
                             foreach(var child in main.ipVBox.AllChildren)
                             {
                                 if (((Gtk.Button)child).Name == sr.IPAdress)
-                                    throw new Exception();
+                                    throw new Exception("Button already present in list");
                             }
                             main.ipVBox.Add(connectBtn);
                             main.ShowAll();
@@ -88,8 +88,15 @@ namespace DeskStreamer
                         }
                     }
                 }
-                catch
+                catch(Exception e)
                 {
+                    if(e.Message != "Button already present in list")
+                    foreach (var child in main.ipVBox.AllChildren)
+                        if (((Gtk.Button)child).Name == networkIpPart + (int)nodeIpNumber)
+                        {
+                            main.ipVBox.Remove((Gtk.Button)child);
+                            ConsoleLogic.WriteConsole("Lost connection with " + networkIpPart + (int)nodeIpNumber);
+                        }
                     //ConsoleLogic.WriteConsole("Failed accessing " + networkIpPart + position);
                 }
                 finally
