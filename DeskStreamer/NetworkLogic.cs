@@ -303,9 +303,6 @@ namespace DeskStreamer
                     Size s = new Size(40, 40);
                     Graphics memoryGraphics = Graphics.FromImage(memoryImage);
                     memoryGraphics.CopyFromScreen(0, 0, 0, 0, s);
-
-                    memoryImage.Save("img.bmp");
-                    //
                     byte[] dataToSend;
                     using (var stream = new MemoryStream())
                     {
@@ -315,8 +312,7 @@ namespace DeskStreamer
                     }
                     memoryImage.Dispose();
                     memoryGraphics.Dispose();
-                    return;
-
+                    Thread.Sleep(30);
                     //Serializer.ObjectToBytes(
                     //    new ImageConverter().ConvertTo(
                     //        memoryImage,
