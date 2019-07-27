@@ -26,14 +26,6 @@ public partial class MainWindow : Gtk.Window
         buttonsRow.Add(btn1);
         //hBox.PackStart(hAllign, false, false, 1);
         rightSide.Add(buttonsRow);
-        //---
-        Label lb1 = new Label("123");
-        Label lb2 = new Label("345");
-        rightSide.Add(lb1);
-        rightSide.Add(lb2);
-        //---
-       
-
     
         HBox mainBox = new HBox(true, 2);
         mainBox.Add(ipVBox);

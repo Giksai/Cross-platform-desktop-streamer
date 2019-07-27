@@ -36,13 +36,9 @@ namespace DeskStreamer
             networkIpPart = sections[0] + '.' + sections[1] + '.' + sections[2] + '.';
         }
 
-        public static void Search()
-        {
-            for(int i = 1; i < 255; i++)
-            {
-                new ParameterizedThreadStart(SearchUnit).Invoke(i);
-            }
-        }
+
+        public static void Search() => new Task(InitSearch).Start();
+        public static void Listen() => new Task(ListenLoop).Start();
 
         private static void SearchUnit(object ipPosition)
         {
@@ -90,6 +86,14 @@ namespace DeskStreamer
             finally
             {
                 semaphore.Release();
+            }
+        }
+
+        private static void InitSearch()
+        {
+            for (int i = 1; i < 255; i++)
+            {
+                new ParameterizedThreadStart(SearchUnit).Invoke(i);
             }
         }
 
