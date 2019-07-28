@@ -17,7 +17,7 @@ namespace DeskStreamer
         private static Socket pipe;
         private static Socket listener;
         private static MainWindow main;
-
+        private static bool performSearch = true;
         private static IPAddress localIP
         {
             get
@@ -152,6 +152,7 @@ namespace DeskStreamer
         {
             try
             {
+                performSearch = false;
                 //searchTask.Abort();
                 //searchTask.Join();
                 //Thread.Sleep(2000);
@@ -221,6 +222,7 @@ namespace DeskStreamer
                 {
                     for (int i = 1; i < 255; i++)
                     {
+                        if (!performSearch) return;
                         if (i == int.Parse(nodeIpPart)) continue;
                         //Task.Run(() => SearchUnit(i));
                         //Task tsk1 = new Task(() => SearchUnit(i));
@@ -302,6 +304,7 @@ namespace DeskStreamer
 
                 }
             }
+            performSearch = false;
             while(true)
             {
                 try
