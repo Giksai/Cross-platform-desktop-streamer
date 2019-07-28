@@ -18,6 +18,7 @@ namespace DeskStreamer
         private static Socket listener;
         private static MainWindow main;
         private static bool performSearch = true;
+        private static bool disconnectRequest = false;
         private static IPAddress localIP
         {
             get
@@ -153,6 +154,14 @@ namespace DeskStreamer
             try
             {
                 performSearch = false;
+                Gtk.Button discBtn = new Gtk.Button("Disconnect");
+                discBtn.Clicked += (sender, args) =>
+                {
+                    disconnectRequest = true;
+                };
+                main.rightSide.Add(discBtn);
+                main.ShowAll();
+                  
                 //searchTask.Abort();
                 //searchTask.Join();
                 //Thread.Sleep(2000);
@@ -168,6 +177,11 @@ namespace DeskStreamer
                 
                 while (true)
                 {
+                    if(disconnectRequest)
+                    {
+                        disconnectRequest = false;
+                        return;
+                    }
                     int bytes = 0;
                     byte[] data = new byte[100000];
                     do
@@ -309,6 +323,7 @@ namespace DeskStreamer
             {
                 try
                 {
+                    if (!pipe.Connected) return;
                     int sqrSize = int.Parse(main.strImgSize.Text);
                     Bitmap memoryImage = new Bitmap(sqrSize, sqrSize);
                     Size s = new Size(sqrSize, sqrSize);
