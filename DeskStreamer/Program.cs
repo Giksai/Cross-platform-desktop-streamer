@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Threading;
 using Gtk;
 
 namespace DeskStreamer
@@ -15,7 +16,8 @@ namespace DeskStreamer
             win.Show();
             NetworkLogic.Search();
             NetworkLogic.Listen();
-            new Task(NetworkLogic.ConnectionCheckLoop).Start();
+            Thread thr1 =  new Thread(NetworkLogic.ConnectionCheckLoop);
+            thr1.Start();
             Application.Run();
             
             

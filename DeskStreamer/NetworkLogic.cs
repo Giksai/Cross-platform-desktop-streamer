@@ -42,7 +42,11 @@ namespace DeskStreamer
 
         private static Thread searchTask = new Thread(InitSearch);
         public static void Search() => searchTask.Start();
-        public static void Listen() => new Task(ListenLoop).Start();
+        public static void Listen()
+        {
+            Thread thr1 = new Thread(ListenLoop);
+            thr1.Start();
+        }
 
         private static void SearchUnit(object nodeIpNumber)
         {
