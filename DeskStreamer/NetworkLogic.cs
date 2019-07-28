@@ -179,6 +179,8 @@ namespace DeskStreamer
                 {
                     if(disconnectRequest)
                     {
+                        pipe.Disconnect(true);
+                        pipe.Dispose();
                         disconnectRequest = false;
                         searchTask.Start();
                         return;
@@ -326,6 +328,7 @@ namespace DeskStreamer
                 {
                     if (!pipe.Connected)
                     {
+
                         searchTask.Start();
                         return;
                     }
