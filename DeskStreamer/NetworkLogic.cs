@@ -309,8 +309,9 @@ namespace DeskStreamer
             {
                 try
                 {
-                    Bitmap memoryImage = new Bitmap(40, 40);
-                    Size s = new Size(40, 40);
+                    int sqrSize = 20;
+                    Bitmap memoryImage = new Bitmap(sqrSize, sqrSize);
+                    Size s = new Size(sqrSize, sqrSize);
                     Graphics memoryGraphics = Graphics.FromImage(memoryImage);
                     memoryGraphics.CopyFromScreen(0, 0, 0, 0, s);
                     byte[] dataToSend;
