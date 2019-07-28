@@ -169,7 +169,7 @@ namespace DeskStreamer
                 while (true)
                 {
                     int bytes = 0;
-                    byte[] data = new byte[pipe.ReceiveBufferSize];
+                    byte[] data = new byte[100000];
                     do
                     {
                         bytes = pipe.Receive(data);
@@ -309,7 +309,7 @@ namespace DeskStreamer
             {
                 try
                 {
-                    int sqrSize = 20;
+                    int sqrSize = int.Parse(main.strImgSize.Text);
                     Bitmap memoryImage = new Bitmap(sqrSize, sqrSize);
                     Size s = new Size(sqrSize, sqrSize);
                     Graphics memoryGraphics = Graphics.FromImage(memoryImage);

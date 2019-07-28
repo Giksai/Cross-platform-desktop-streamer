@@ -10,6 +10,7 @@ public partial class MainWindow : Gtk.Window
     public Label currIP = new Label("0.0.0.0"); //Right side
     public Label dataAmount = new Label("-");   //Right side
     public Image connectionStatus = new Image("default.jpg"); //right side
+    public Entry strImgSize = new Entry("40");
 
     public MainWindow() : base(Gtk.WindowType.Toplevel)
     {
@@ -21,6 +22,7 @@ public partial class MainWindow : Gtk.Window
         //hBox.PackStart(hAllign, false, false, 1);
         connectionStatus.SetSizeRequest(50, 50);
 
+        rightSide.Add(strImgSize);
         rightSide.Add(currIP);
         rightSide.Add(dataAmount);
         rightSide.Add(connectionStatus);
