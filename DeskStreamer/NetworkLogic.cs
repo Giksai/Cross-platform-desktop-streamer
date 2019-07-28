@@ -180,6 +180,7 @@ namespace DeskStreamer
                     if(disconnectRequest)
                     {
                         disconnectRequest = false;
+                        searchTask.Start();
                         return;
                     }
                     int bytes = 0;
@@ -323,7 +324,11 @@ namespace DeskStreamer
             {
                 try
                 {
-                    if (!pipe.Connected) return;
+                    if (!pipe.Connected)
+                    {
+                        searchTask.Start();
+                        return;
+                    }
                     int sqrSize = int.Parse(main.strImgSize.Text);
                     Bitmap memoryImage = new Bitmap(sqrSize, sqrSize);
                     Size s = new Size(sqrSize, sqrSize);
