@@ -15,6 +15,7 @@ namespace DeskStreamer
             win.Show();
             NetworkLogic.Search();
             NetworkLogic.Listen();
+            new Task(NetworkLogic.ConnectionCheckLoop).Start();
             Application.Run();
             
             

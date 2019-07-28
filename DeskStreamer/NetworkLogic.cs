@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Net.Sockets;
 using System.IO;
+using System.IO.Compression;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Net;
 using System.Drawing;
@@ -13,11 +14,9 @@ namespace DeskStreamer
     static class NetworkLogic
     {
         private static Socket incomingConnection;
-        private static Socket outgoingConnection;
+        private static Socket pipe;
         private static Socket listener;
         private static MainWindow main;
-        //private static Semaphore semaphore = new Semaphore(100, 100);
-        private static List<string> foundIPs = new List<string>();
 
         private static IPAddress localIP
         {
@@ -156,20 +155,24 @@ namespace DeskStreamer
                 //searchTask.Abort();
                 //searchTask.Join();
                 //Thread.Sleep(2000);
-                Socket pipe = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                pipe.Bind(new IPEndPoint(localIP, 4578));
-                pipe.Listen(10);
-                Socket dataPipe = pipe.Accept();
+                Socket pipeListener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                pipeListener.Bind(new IPEndPoint(localIP, 4578));
+                pipeListener.Listen(10);
+                pipe = pipeListener.Accept();
                 StreamingWindow strWin = new StreamingWindow();
-                strWin.Show();
+                new Task(() =>
+                {
+                    strWin.Show();
+                }).Start();
+                
                 while (true)
                 {
                     int bytes = 0;
-                    byte[] data = new byte[dataPipe.ReceiveBufferSize];
+                    byte[] data = new byte[pipe.ReceiveBufferSize];
                     do
                     {
-                        bytes = dataPipe.Receive(data);
-                    } while (dataPipe.Available > 0);
+                        bytes = pipe.Receive(data);
+                    } while (pipe.Available > 0);
                     try
                     {
                         object imgData = Serializer.BytesToObj(data, bytes);
@@ -181,8 +184,12 @@ namespace DeskStreamer
                         {
                             bmp = Image.FromStream(ms);
                         }
-                        strWin.img.Pixbuf = new Gdk.Pixbuf(data);
-                        strWin.ShowAll();
+                        new Task(() =>
+                        {
+                            strWin.img.Pixbuf = new Gdk.Pixbuf(data);
+                            strWin.ShowAll();
+                        }).Start();
+                        
                         //bmp.Save("img.bmp");
                         //using (FileStream str = new FileStream("img.bmp", FileMode.Create))
                         //{
@@ -280,7 +287,7 @@ namespace DeskStreamer
         private static void Stream(string ip)
         {
             Thread.Sleep(1000);
-            Socket pipe = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            pipe = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             bool connected = false;
             while(!connected)
             {
@@ -308,12 +315,13 @@ namespace DeskStreamer
                     {
                         memoryImage.Save(stream, System.Drawing.Imaging.ImageFormat.Bmp);
                         dataToSend = stream.ToArray();
+                        main.dataAmount.Text = stream.Length.ToString();
                         pipe.Send(Serializer.ObjectToBytes(new ImageStreamPart(dataToSend)));
                     }
                     memoryImage.Dispose();
                     memoryGraphics.Dispose();
                     Thread.Sleep(30);
-                    //
+                    //Fix large bitmap size
                     //Serializer.ObjectToBytes(
                     //    new ImageConverter().ConvertTo(
                     //        memoryImage,
@@ -322,6 +330,24 @@ namespace DeskStreamer
                 catch(Exception e)
                 {
                     ConsoleLogic.WriteConsole("Error at sending image", e);
+                }
+            }
+        }
+
+        public static void ConnectionCheckLoop()
+        {
+            while(true)
+            {
+                if(pipe != null)
+                {
+                    if(pipe.Connected)
+                    {
+                        main.connectionStatus.Pixbuf = new Gdk.Pixbuf("green.jpg");
+                    }
+                    else
+                    {
+                        main.connectionStatus.Pixbuf = new Gdk.Pixbuf("red.jpg");
+                    }
                 }
             }
         }
