@@ -258,19 +258,26 @@ namespace DeskStreamer
             
         private static void ConnectionCheckLoop()
         {
-            while(true)
+            while(pipe == null)
             {
-                if(pipe != null)
-                {
-                    if(pipe.Connected)
+                Thread.Sleep(100);
+            }
+            bool status = false;
+            status = pipe.Connected;
+            if (pipe.Connected)
+                main.connectionStatus.Pixbuf = new Gdk.Pixbuf("green.jpg");
+            else
+                main.connectionStatus.Pixbuf = new Gdk.Pixbuf("red.jpg");
+            while (true)
+            {
+                    if(pipe.Connected && status == false)
                     {
                         main.connectionStatus.Pixbuf = new Gdk.Pixbuf("green.jpg");
                     }
-                    else
+                    else if(!pipe.Connected && status == true)
                     {
                         main.connectionStatus.Pixbuf = new Gdk.Pixbuf("red.jpg");
                     }
-                }
                 Thread.Sleep(50);
             }
         }
