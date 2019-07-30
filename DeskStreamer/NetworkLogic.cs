@@ -137,9 +137,12 @@ namespace DeskStreamer
                             if (disconnectRequest)
                             {
                                 pipe.Disconnect(true);
+                                pipe.Dispose();
+                                discBtn.Hide();
                                 discBtn.Destroy();
                                 discBtn.Dispose();
                                 disconnectRequest = false;
+                                break;
                                 //searchTask.Start();
                             }
                         }

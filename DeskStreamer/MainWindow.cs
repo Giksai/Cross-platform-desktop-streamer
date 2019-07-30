@@ -14,6 +14,7 @@ public partial class MainWindow : Gtk.Window
     public Image connectionStatus = new Image("default.jpg"); //right side
     public Entry strImgSize = new Entry("40");
     public Entry connectIP = new Entry("192.168.100.10");
+    public Label consoleTxt = new Label("Console: \n");
 
     Label aliveMeter = new Label();
     public MainWindow() : base(Gtk.WindowType.Toplevel)
@@ -26,23 +27,37 @@ public partial class MainWindow : Gtk.Window
         //hBox.PackStart(hAllign, false, false, 1);
         connectionStatus.SetSizeRequest(50, 50);
 
-        
 
-        rightSide.Add(aliveMeter);
         rightSide.Add(strImgSize);
+        rightSide.Add(connectionStatus);
+        rightSide.Add(aliveMeter);
         //rightSide.Add(currIP);
         rightSide.Add(dataAmount);
-        rightSide.Add(connectionStatus);
-
-        VBox connectPart = new VBox(true, 50);
+        Alignment vAlignRP = new Alignment(0, 0, 1, 0);
+        vAlignRP.Add(rightSide);
+        vAlignRP.SetSizeRequest(200, 300);
+        
+        VBox connectPart = new VBox(true, 0);
         Button connectBtn = new Button("Connect");
         connectBtn.Pressed += NetworkLogic.ConnectBtnPressed;
         connectPart.Add(connectIP);
         connectPart.Add(connectBtn);
+        Alignment vAlignConnect = new Alignment(0, 0, 1, 0);
+        vAlignConnect.Add(connectPart);
+        vAlignConnect.SetSizeRequest(200, 200);
+
+        Alignment consoleTop = new Alignment(0, 0, 0, 0);
+        consoleTop.Add(consoleTxt);
+        VBox consoleLabelHolder = new VBox(false, 0);
+        consoleLabelHolder.PackStart(consoleTop);
+        consoleLabelHolder.SetSizeRequest(500, 500);
+        
     
-        HBox mainBox = new HBox(false, 2);
-        mainBox.Add(connectPart);
-        mainBox.Add(rightSide);
+        HBox mainBox = new HBox(false, 0);
+        mainBox.SetSizeRequest(600, 480);
+        mainBox.Add(vAlignConnect);
+        mainBox.Add(vAlignRP);
+        mainBox.PackEnd(consoleLabelHolder);
 
         MenuBar menuBar = new MenuBar();
         Menu fileMenu = new Menu();
