@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 using System.Threading;
 using System.Net.Sockets;
 using System.IO;
@@ -8,6 +9,7 @@ using System.IO.Compression;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Net;
 using System.Drawing;
+using System.Drawing.Imaging;
 
 namespace DeskStreamer
 {
@@ -115,7 +117,7 @@ namespace DeskStreamer
                     {
                         Thread.Sleep(10);
                         int bytes = 0;
-                        byte[] data = new byte[10000];
+                        byte[] data = new byte[30000];
                         do
                         {
                             bytes = pipe.Receive(data);
@@ -125,12 +127,6 @@ namespace DeskStreamer
                             object imgData = Serializer.BytesToObj(data, bytes);
                             if (!(imgData is ImageStreamPart)) throw new Exception("Wrong data!");
                             data = (imgData as ImageStreamPart).bitmap;
-                            //Bitmap img = (Bitmap)new ImageConverter().ConvertTo(data, typeof(Bitmap));
-                            //Image bmp;
-                            //using (Stream ms = new MemoryStream(data))
-                            //{
-                            //    bmp = Image.FromStream(ms);
-                            //}
                                 strWin.img.Pixbuf = new Gdk.Pixbuf(data);
                                 strWin.ShowAll();
 
@@ -234,19 +230,37 @@ namespace DeskStreamer
                         //searchTask.Start();
                         return;
                     }
-                    int sqrSize = int.Parse(main.strImgSize.Text);
+                    int sqrSize = (int)main.strImgSize.Value;
+                    
                     Bitmap memoryImage = new Bitmap(sqrSize, sqrSize);
                     Size s = new Size(sqrSize, sqrSize);
                     Graphics memoryGraphics = Graphics.FromImage(memoryImage);
                     memoryGraphics.CopyFromScreen(0, 0, 0, 0, s);
+                    //Compress
                     byte[] dataToSend;
                     using (var stream = new MemoryStream())
                     {
-                        memoryImage.Save(stream, System.Drawing.Imaging.ImageFormat.Bmp);
+                        EncoderParameter qualityParam = new EncoderParameter(Encoder.Quality, (long)main.strImgCompression.Value);
+                        EncoderParameter colorDepthParam = new EncoderParameter(Encoder.ColorDepth, (long)main.strImgCD.Value);
+                        EncoderParameter compressionParam = new EncoderParameter(Encoder.Compression, (long)EncoderValue.CompressionLZW);
+                        ImageCodecInfo imageCodec = ImageCodecInfo.GetImageEncoders().FirstOrDefault(o => o.FormatID == ImageFormat.Jpeg.Guid);
+                        EncoderParameters parameters = new EncoderParameters(3);
+                        
+                        parameters.Param[0] = qualityParam;
+                        parameters.Param[1] = colorDepthParam;
+                        parameters.Param[2] = compressionParam;
+                        memoryImage.Save(stream, imageCodec, parameters);
+
                         dataToSend = stream.ToArray();
                         main.dataAmount.Text = stream.Length.ToString();
-                        pipe.Send(Serializer.ObjectToBytes(new ImageStreamPart(dataToSend)));
+                        pipe.Send(Serializer.ObjectToBytes(new ImageStreamPart(dataToSend, (long)main.strImgCompression.Value)));
                     }
+                    //using (var stream = new MemoryStream())
+                    //{
+                    //    compressedImg.Save(stream, ImageFormat.Jpeg);
+                        
+                    //}
+
                     memoryImage.Dispose();
                     memoryGraphics.Dispose();
                     Thread.Sleep(30);
@@ -263,7 +277,19 @@ namespace DeskStreamer
             }
         }
 
-            
+        private static Image GetCompressedBitmap(Bitmap bmp, long quality)
+        {
+            using (var mss = new MemoryStream())
+            {
+                EncoderParameter qualityParam = new EncoderParameter(Encoder.Quality, quality);
+                ImageCodecInfo imageCodec = ImageCodecInfo.GetImageEncoders().FirstOrDefault(o => o.FormatID == ImageFormat.Jpeg.Guid);
+                EncoderParameters parameters = new EncoderParameters(1);
+                parameters.Param[0] = qualityParam;
+                bmp.Save(mss, imageCodec, parameters);
+                return Image.FromStream(mss);
+            }
+        }
+
         private static void ConnectionCheckLoop()
         {
             main.connectionStatus.Pixbuf = new Gdk.Pixbuf("red.jpg");
@@ -290,17 +316,30 @@ namespace DeskStreamer
                     {
                         main.connectionStatus.Pixbuf = new Gdk.Pixbuf("red.jpg");
                         status = false;
-                        if(discBtn != null)
-                        discBtn.Hide();
+                        if (discBtn != null)
+                            HideConnectionControls();
                     }
                 }
                 else if(pipe == null && status == true)
                 {
                     status = false;
                     main.connectionStatus.Pixbuf = new Gdk.Pixbuf("red.jpg");
+                    if (discBtn != null)
+                        HideConnectionControls();
                 }
                 Thread.Sleep(50);
             }
+        }
+
+        private static void HideConnectionControls()
+        {
+            discBtn.Hide();
+            discBtn.Destroy();
+            discBtn.Dispose();
+
+            strWin.Hide();
+            strWin.Destroy();
+            strWin.Dispose();
         }
 
         public static void GetIPVBoxRef(MainWindow mainRef) => main = mainRef;

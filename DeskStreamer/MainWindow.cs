@@ -12,7 +12,10 @@ public partial class MainWindow : Gtk.Window
     //public Label currIP = new Label("0.0.0.0"); //Right side
     public Label dataAmount = new Label("-");   //Right side
     public Image connectionStatus = new Image("default.jpg"); //right side
-    public Entry strImgSize = new Entry("40");
+    public HScale strImgSize = new HScale(1, 1000, 1);
+    public HScale strImgCompression = new HScale(1, 100, 1);
+    public HScale strImgCD = new HScale(1, 100, 1);
+
     public Entry connectIP = new Entry("192.168.100.10");
     public Label consoleTxt = new Label("Console: \n");
 
@@ -27,8 +30,16 @@ public partial class MainWindow : Gtk.Window
         //hBox.PackStart(hAllign, false, false, 1);
         connectionStatus.SetSizeRequest(50, 50);
 
+        Label compLabel = new Label("Compression Ratio");
+        Label imgSizeLabel = new Label("Image size");
+        Label colorDepthLabel = new Label("Color depth");
 
+        rightSide.Add(imgSizeLabel);
         rightSide.Add(strImgSize);
+        rightSide.Add(compLabel);
+        rightSide.Add(strImgCompression);
+        rightSide.Add(colorDepthLabel);
+        rightSide.Add(strImgCD);
         rightSide.Add(connectionStatus);
         rightSide.Add(aliveMeter);
         //rightSide.Add(currIP);

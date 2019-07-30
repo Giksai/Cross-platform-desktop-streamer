@@ -43,10 +43,12 @@ namespace DeskStreamer
     [Serializable]
     class ImageStreamPart
     {
-        public ImageStreamPart(byte[] img)
+        public ImageStreamPart(byte[] img, long compressionValue)
         {
             bitmap = img;
+            this.compressionValue = compressionValue;
         }
         public byte[] bitmap;
+        public long compressionValue;
     }
 }

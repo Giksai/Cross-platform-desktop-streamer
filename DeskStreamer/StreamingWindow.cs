@@ -7,9 +7,10 @@ using Gtk;
 
 public partial class StreamingWindow : Window
 {
-    public Image img = new Image("default.jpg");
+    public Image img;
     public StreamingWindow() : base(WindowType.Toplevel)
     {
+        img = new Image("default.jpg");
         Add(img);
         ShowAll();
         
