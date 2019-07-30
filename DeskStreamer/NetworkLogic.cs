@@ -89,10 +89,10 @@ namespace DeskStreamer
             
         }
         static StreamingWindow strWin;
+        static Gtk.Button discBtn = new Gtk.Button("Disconnect");
         private static void InitScreen()
         {
                 //performSearch = false;
-                Gtk.Button discBtn = new Gtk.Button("Disconnect");
                 discBtn.Clicked += (sender, args) => disconnectRequest = true;
                 main.rightSide.Add(discBtn);
                 main.ShowAll();
@@ -110,8 +110,9 @@ namespace DeskStreamer
                     pipeListener.Listen(10);
                     pipe = pipeListener.Accept();
 
-                    while (true)
+                    while (pipe.Connected)
                     {
+                        Thread.Sleep(10);
                         int bytes = 0;
                         byte[] data = new byte[10000];
                         do
@@ -169,6 +170,7 @@ namespace DeskStreamer
                 BinaryFormatter formatter = new BinaryFormatter();
                 while (true)
                 {
+                    Thread.Sleep(10);
                     incomingConnection = listener.Accept();
                     int bytes = 0;
                     byte[] data = new byte[incomingConnection.ReceiveBufferSize];
@@ -220,6 +222,7 @@ namespace DeskStreamer
             //performSearch = false;
             while(true)
             {
+                Thread.Sleep(10);
                 try
                 {
                     if (!pipe.Connected)
