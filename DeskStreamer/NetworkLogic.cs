@@ -110,10 +110,10 @@ namespace DeskStreamer
                     pipeListener.Listen(10);
                     pipe = pipeListener.Accept();
 
-                    while (pipe.Connected)
+                    while (true)
                     {
                         int bytes = 0;
-                        byte[] data = new byte[100000];
+                        byte[] data = new byte[10000];
                         do
                         {
                             bytes = pipe.Receive(data);
@@ -224,7 +224,6 @@ namespace DeskStreamer
                 {
                     if (!pipe.Connected)
                     {
-
                         //searchTask.Start();
                         return;
                     }
@@ -257,10 +256,7 @@ namespace DeskStreamer
             }
         }
 
-        public static void StartConnectionCheckLoop()
-        {
             
-        }
         private static void ConnectionCheckLoop()
         {
             while(true)

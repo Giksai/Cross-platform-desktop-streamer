@@ -60,7 +60,7 @@ public partial class MainWindow : Gtk.Window
         
         ShowAll();
 
-        Task aMC = new Task(AliveMeterCount);
+        Thread aMC = new Thread(AliveMeterCount);
         aMC.Start();
 
     }
