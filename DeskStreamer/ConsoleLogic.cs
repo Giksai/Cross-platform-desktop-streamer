@@ -14,14 +14,17 @@ namespace DeskStreamer
         {
             try
             {
-                if (e != null)
-                    main.rightSide.Add(new Label("Error on " +
-                        DateTime.Now.ToShortDateString() + ": " +
-                        e.Message + "\n" + e.StackTrace + "\n" + text));
-                else
-                    main.rightSide.Add(new Label(text));
+                lock(main)
+                {
+                    if (e != null)
+                        main.rightSide.Add(new Label("Error on " +
+                            DateTime.Now.ToShortDateString() + ": " +
+                            e.Message + "\n" + e.StackTrace + "\n" + text));
+                    else
+                        main.rightSide.Add(new Label(text));
 
-                main.ShowAll();
+                    main.ShowAll();
+                }
             }
             catch
             {

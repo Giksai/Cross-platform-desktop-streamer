@@ -14,10 +14,8 @@ namespace DeskStreamer
             ConsoleLogic.SendMainWindowRef(win);
             NetworkLogic.GetIPVBoxRef(win);
             win.Show();
-            NetworkLogic.Search();
-            NetworkLogic.Listen();
-            Thread thr1 =  new Thread(NetworkLogic.ConnectionCheckLoop);
-            thr1.Start();
+            //NetworkLogic.Search();
+
             Application.Run();
             
             

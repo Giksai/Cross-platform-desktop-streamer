@@ -1,17 +1,21 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Gtk;
+using DeskStreamer;
 
 public partial class MainWindow : Gtk.Window
 {
     public VBox rightSide = new VBox(false, 1);
-    public VBox ipVBox = new VBox(true, 5);     //Left side
-    public Label currIP = new Label("0.0.0.0"); //Right side
+    //public VBox ipVBox = new VBox(true, 5);     //Left side
+    //public Label currIP = new Label("0.0.0.0"); //Right side
     public Label dataAmount = new Label("-");   //Right side
     public Image connectionStatus = new Image("default.jpg"); //right side
     public Entry strImgSize = new Entry("40");
+    public Entry connectIP = new Entry("192.168.100.10");
 
+    Label aliveMeter = new Label();
     public MainWindow() : base(Gtk.WindowType.Toplevel)
     {
         Build();
@@ -22,13 +26,22 @@ public partial class MainWindow : Gtk.Window
         //hBox.PackStart(hAllign, false, false, 1);
         connectionStatus.SetSizeRequest(50, 50);
 
+        
+
+        rightSide.Add(aliveMeter);
         rightSide.Add(strImgSize);
-        rightSide.Add(currIP);
+        //rightSide.Add(currIP);
         rightSide.Add(dataAmount);
         rightSide.Add(connectionStatus);
+
+        VBox connectPart = new VBox(true, 50);
+        Button connectBtn = new Button("Connect");
+        connectBtn.Pressed += NetworkLogic.ConnectBtnPressed;
+        connectPart.Add(connectIP);
+        connectPart.Add(connectBtn);
     
-        HBox mainBox = new HBox(true, 2);
-        mainBox.Add(ipVBox);
+        HBox mainBox = new HBox(false, 2);
+        mainBox.Add(connectPart);
         mainBox.Add(rightSide);
 
         MenuBar menuBar = new MenuBar();
@@ -46,7 +59,10 @@ public partial class MainWindow : Gtk.Window
         Add(allContent);
         
         ShowAll();
-        
+
+        Task aMC = new Task(AliveMeterCount);
+        aMC.Start();
+
     }
 
     protected void OnDeleteEvent(object sender, DeleteEventArgs a)
@@ -59,6 +75,15 @@ public partial class MainWindow : Gtk.Window
     protected void OnExitEvent(object sender, EventArgs args)
     {
 
+    }
+
+    private void AliveMeterCount()
+    {
+        while (true)
+        {
+            aliveMeter.Text = "Alive meter - " + DateTime.Now.Millisecond/100;
+            Thread.Sleep(100);
+        }
     }
     
 }
