@@ -138,10 +138,14 @@ namespace DeskStreamer
                             {
                                 pipe.Disconnect(true);
                                 pipe.Dispose();
+                                pipe = null;
                                 discBtn.Hide();
                                 discBtn.Destroy();
                                 discBtn.Dispose();
                                 disconnectRequest = false;
+                                strWin.Hide();
+                                strWin.Dispose();
+                                strWin = null;
                                 break;
                                 //searchTask.Start();
                             }
@@ -286,6 +290,7 @@ namespace DeskStreamer
                     {
                         main.connectionStatus.Pixbuf = new Gdk.Pixbuf("red.jpg");
                         status = false;
+                        if(discBtn != null)
                         discBtn.Hide();
                     }
                 }
