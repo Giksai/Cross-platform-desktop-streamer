@@ -89,15 +89,16 @@ namespace DeskStreamer
             
         }
         static StreamingWindow strWin;
-        static Gtk.Button discBtn = new Gtk.Button("Disconnect");
+        static Gtk.Button discBtn;
         private static void InitScreen()
         {
-                //performSearch = false;
-                discBtn.Clicked += (sender, args) => disconnectRequest = true;
-                main.rightSide.Add(discBtn);
-                main.ShowAll();
-                strWin = new StreamingWindow();
-                strWin.Show();
+            //performSearch = false;
+            discBtn = new Gtk.Button("Disconnect");
+            discBtn.Clicked += (sender, args) => disconnectRequest = true;
+            main.rightSide.Add(discBtn);
+            main.ShowAll();
+            strWin = new StreamingWindow();
+            strWin.Show();
         }
         private static void DataListenLoop()
         {
@@ -136,10 +137,10 @@ namespace DeskStreamer
                             if (disconnectRequest)
                             {
                                 pipe.Disconnect(true);
-                                discBtn.Hide();
+                                discBtn.Destroy();
+                                discBtn.Dispose();
                                 disconnectRequest = false;
                                 //searchTask.Start();
-                                return;
                             }
                         }
                         catch (Exception e1)
