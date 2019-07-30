@@ -136,7 +136,7 @@ namespace DeskStreamer
                             if (disconnectRequest)
                             {
                                 pipe.Disconnect(true);
-                                pipe.Dispose();
+                                discBtn.Hide();
                                 disconnectRequest = false;
                                 //searchTask.Start();
                                 return;
@@ -273,10 +273,13 @@ namespace DeskStreamer
                     if(pipe.Connected && status == false)
                     {
                         main.connectionStatus.Pixbuf = new Gdk.Pixbuf("green.jpg");
+                        status = pipe.Connected;
                     }
                     else if(!pipe.Connected && status == true)
                     {
                         main.connectionStatus.Pixbuf = new Gdk.Pixbuf("red.jpg");
+                        status = pipe.Connected;
+                        discBtn.Hide();
                     }
                 Thread.Sleep(50);
             }
