@@ -6,14 +6,15 @@ namespace DeskStreamer
 {
     static class Serializer
     {
+        private static BinaryFormatter formatterSer = new BinaryFormatter();
+        private static BinaryFormatter formatterDeSer = new BinaryFormatter();
         public static byte[] ObjectToBytes(object obj)
         {
             try
             {
-                BinaryFormatter formatter = new BinaryFormatter();
                 using (var ms = new MemoryStream())
                 {
-                    formatter.Serialize(ms, obj);
+                    formatterSer.Serialize(ms, obj);
                     return ms.ToArray();
                 }
             }
@@ -28,12 +29,11 @@ namespace DeskStreamer
         {
             try
             {
-                BinaryFormatter formatter = new BinaryFormatter();
                 using (var ms = new MemoryStream())
                 {
                     ms.Write(bytes, 0, bytes.Length);
                     ms.Seek(0, SeekOrigin.Begin);
-                    var obj = formatter.Deserialize(ms);
+                    var obj = formatterDeSer.Deserialize(ms);
                     return obj;
                 }
             }

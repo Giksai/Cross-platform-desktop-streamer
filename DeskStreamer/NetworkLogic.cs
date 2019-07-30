@@ -125,16 +125,13 @@ namespace DeskStreamer
                             if (!(imgData is ImageStreamPart)) throw new Exception("Wrong data!");
                             data = (imgData as ImageStreamPart).bitmap;
                             //Bitmap img = (Bitmap)new ImageConverter().ConvertTo(data, typeof(Bitmap));
-                            Image bmp;
-                            using (Stream ms = new MemoryStream(data))
-                            {
-                                bmp = Image.FromStream(ms);
-                            }
-                            new Task(() =>
-                            {
+                            //Image bmp;
+                            //using (Stream ms = new MemoryStream(data))
+                            //{
+                            //    bmp = Image.FromStream(ms);
+                            //}
                                 strWin.img.Pixbuf = new Gdk.Pixbuf(data);
                                 strWin.ShowAll();
-                            }).Start();
 
                             if (disconnectRequest)
                             {
@@ -222,7 +219,6 @@ namespace DeskStreamer
             //performSearch = false;
             while(true)
             {
-                Thread.Sleep(10);
                 try
                 {
                     if (!pipe.Connected)
