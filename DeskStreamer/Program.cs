@@ -12,6 +12,8 @@ namespace DeskStreamer
             Application.Init();
             MainWindow win = new MainWindow();
             NetworkLogic.GetIPVBoxRef(win);
+            ConsoleLogic.SendLabelRef(win.consoleTxt);
+            ConsoleLogic.SendMainWindowRef(win);
             win.Show();
             Application.Run();
             

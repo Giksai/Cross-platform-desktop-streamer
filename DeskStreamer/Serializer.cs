@@ -20,7 +20,7 @@ namespace DeskStreamer
             }
             catch(Exception e)
             {
-                ConsoleLogic.WriteConsole("Error at serializing", e);
+                //ConsoleLogic.WriteConsole("Error at serializing");
                 return null;
             }
         }
@@ -39,7 +39,7 @@ namespace DeskStreamer
             }
             catch(Exception e)
             {
-                ConsoleLogic.WriteConsole("Error at deserealizing", e);
+                //ConsoleLogic.WriteConsole("Error at deserealizing");
                 return null;
             }
             

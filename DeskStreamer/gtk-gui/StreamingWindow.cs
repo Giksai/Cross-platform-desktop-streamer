@@ -14,8 +14,8 @@ public partial class StreamingWindow
         {
             this.Child.ShowAll();
         }
-        this.DefaultWidth = 300;
-        this.DefaultHeight = 300;
+        this.DefaultWidth = 800;
+        this.DefaultHeight = 800;
         this.Show();
         this.DeleteEvent += new global::Gtk.DeleteEventHandler(this.OnDeleteEvent);
     }

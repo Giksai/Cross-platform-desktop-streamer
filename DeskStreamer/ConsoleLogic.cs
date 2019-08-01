@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using Gtk;
 
 namespace DeskStreamer
@@ -10,6 +10,8 @@ namespace DeskStreamer
     {
         public static MainWindow main;
         private static Label txt;
+        private static Dictionary<string, int> printedMessages = new Dictionary<string, int>();
+        private static string lastMessage;
 
         public static void WriteConsole(string text, Exception e = null)
         {
@@ -26,19 +28,47 @@ namespace DeskStreamer
 
                 //    main.ShowAll();
                 //}
-                lock (main)
+                lock(main)
                 {
-                    if (e != null)
-                        txt.Text += "Error! " + text + '\n' + e.Message
-                            + '\n' + e.StackTrace + '\n';
+                    if(printedMessages.ContainsKey(text))
+                    {
+                        printedMessages[text]++;
+                        if(lastMessage == text)
+                        {
+                            if (e != null)
+                                txt.Text = "Error! " + text + " - " + printedMessages[text] + '\n' + e.Message
+                                    + '\n' + e.StackTrace + '\n';
+                            else
+                                txt.Text = text + " - " + printedMessages[text] + '\n';
+                        }
+                        else
+                        {
+                            if (e != null)
+                                txt.Text += "Error! " + text + " - " + printedMessages[text] + '\n' + e.Message
+                                    + '\n' + e.StackTrace + '\n';
+                            else
+                                txt.Text += text + " - " + printedMessages[text] + '\n';
+                            lastMessage = text;
+                        }
+                        
+                        
+                    }
                     else
-                        txt.Text += text + '\n';
-
-                    main.ShowAll();
+                    {
+                        printedMessages.Add(text, 1);
+                        if (e != null)
+                            txt.Text += "Error! " + text + " - " + printedMessages[text] + '\n' + e.Message
+                                + '\n' + e.StackTrace + '\n';
+                        else
+                            txt.Text += text + " - " + printedMessages[text] + '\n';
+                        lastMessage = text;
+                        Thread.Sleep(5);
+                    }
+                    
                 }
 
             }
-            catch
+            catch(Exception e2)
             {
 
             }

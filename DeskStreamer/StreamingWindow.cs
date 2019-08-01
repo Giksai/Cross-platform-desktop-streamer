@@ -7,13 +7,11 @@ using Gtk;
 
 public partial class StreamingWindow : Window
 {
-    public Image img;
+    public Image img = new Image();
     public StreamingWindow() : base(WindowType.Toplevel)
     {
-        img = new Image("default.jpg");
         Add(img);
         ShowAll();
-        
     }
 
     protected void OnDeleteEvent(object sender, DeleteEventArgs a)

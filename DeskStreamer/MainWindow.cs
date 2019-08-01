@@ -11,10 +11,15 @@ public partial class MainWindow : Gtk.Window
     //public VBox ipVBox = new VBox(true, 5);     //Left side
     //public Label currIP = new Label("0.0.0.0"); //Right side
     public Label dataAmount = new Label("-");   //Right side
-    public Image connectionStatus = new Image("default.jpg"); //right side
+    public Label compressedDataAmount = new Label("--");
+    public Label cycleSpeedReceive = new Label("--receive-");
+    public Label cycleSpeedSend = new Label("--send-");
+    public Label thrSleepTime = new Label("--thr sleep time--");
+    //public Image connectionStatus = new Image("default.jpg"); //right side
     public HScale strImgSize = new HScale(1, 1000, 1);
     public HScale strImgCompression = new HScale(1, 100, 1);
     public HScale strImgCD = new HScale(1, 100, 1);
+    public HScale FPS = new HScale(1, 60, 1);
 
     public Entry connectIP = new Entry("192.168.100.10");
     public Label consoleTxt = new Label("Console: \n");
@@ -28,11 +33,20 @@ public partial class MainWindow : Gtk.Window
         VBox allContent = new VBox(false, 2);
         //Alignment hAllign = new Alignment(0, 0, 0, 0);
         //hBox.PackStart(hAllign, false, false, 1);
-        connectionStatus.SetSizeRequest(50, 50);
+        //connectionStatus.SetSizeRequest(50, 50);
 
         Label compLabel = new Label("Compression Ratio");
         Label imgSizeLabel = new Label("Image size");
         Label colorDepthLabel = new Label("Color depth");
+        Label FPSLabel = new Label("Frames per second");
+        strImgSize.Value = 300;
+        FPS.Value = 60;
+
+        Label uncprsDataLable = new Label("Uncopressed data");
+        Label cprsDataLabel = new Label("Compressed data");
+        Label cycleReceiveLAbel = new Label("Receive cycles per second");
+        Label cycleSendLabel = new Label("Sending cycles per second");
+        Label thrSleepLabel = new Label("Thread sleep time");
 
         rightSide.Add(imgSizeLabel);
         rightSide.Add(strImgSize);
@@ -40,10 +54,22 @@ public partial class MainWindow : Gtk.Window
         rightSide.Add(strImgCompression);
         rightSide.Add(colorDepthLabel);
         rightSide.Add(strImgCD);
-        rightSide.Add(connectionStatus);
+        rightSide.Add(FPSLabel);
+        rightSide.Add(FPS);
+        rightSide.Add(cycleReceiveLAbel);
+        rightSide.Add(cycleSpeedReceive);
+        rightSide.Add(cycleSendLabel);
+        rightSide.Add(cycleSpeedSend);
+        rightSide.Add(thrSleepLabel);
+        rightSide.Add(thrSleepTime);
+        //rightSide.Add(connectionStatus);
         rightSide.Add(aliveMeter);
         //rightSide.Add(currIP);
+        rightSide.Add(uncprsDataLable);
         rightSide.Add(dataAmount);
+        rightSide.Add(cprsDataLabel);
+        rightSide.Add(compressedDataAmount);
+
         Alignment vAlignRP = new Alignment(0, 0, 1, 0);
         vAlignRP.Add(rightSide);
         vAlignRP.SetSizeRequest(200, 300);
@@ -100,7 +126,7 @@ public partial class MainWindow : Gtk.Window
 
     protected void OnExitEvent(object sender, EventArgs args)
     {
-
+        Environment.Exit(0);
     }
 
     private void AliveMeterCount()

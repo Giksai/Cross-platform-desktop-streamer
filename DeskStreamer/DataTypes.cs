@@ -46,9 +46,13 @@ namespace DeskStreamer
         public ImageStreamPart(byte[] img, long compressionValue)
         {
             bitmap = img;
-            this.compressionValue = compressionValue;
+            this.originalSize = compressionValue;
+        }
+        public ImageStreamPart(byte[] img)
+        {
+            bitmap = img;
         }
         public byte[] bitmap;
-        public long compressionValue;
+        public long originalSize;
     }
 }

@@ -10,6 +10,9 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Net;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Timers;
+using K4os.Compression.LZ4;
+using K4os.Compression.LZ4.Streams;
 
 namespace DeskStreamer
 {
@@ -40,7 +43,7 @@ namespace DeskStreamer
             string[] sections = localIP.ToString().Split('.');
             networkIpPart = sections[0] + '.' + sections[1] + '.' + sections[2] + '.';
             nodeIpPart = sections[3];
-            Thread dataListenLoopThr = new Thread(DataListenLoop);
+            Task dataListenLoopThr = new Task(DataListenLoop);
             dataListenLoopThr.Start();
             Thread commandListenLoopThr = new Thread(CommandListenLoop);
             commandListenLoopThr.Start();
@@ -65,7 +68,7 @@ namespace DeskStreamer
 
                 IAsyncResult result = connectionSocket.BeginConnect(new IPEndPoint(
                         IPAddress.Parse(Ip), 6897), null, null);
-                bool connected = result.AsyncWaitHandle.WaitOne(3000, true);
+                bool connected = result.AsyncWaitHandle.WaitOne(1000, true);
                 if (!connected) throw new Exception();
                 InitScreen();
                 connectionSocket.Send(Serializer.ObjectToBytes(new ConnectionRequest(localIP.ToString())));
@@ -86,7 +89,7 @@ namespace DeskStreamer
             {
                 //main.ipVBox.Remove((Gtk.Button)sender);
                 //main.ShowAll();
-                ConsoleLogic.WriteConsole("Lost connection with " + Ip);
+                ConsoleLogic.WriteConsole("Lost connection with " + Ip, e);
             }
             
         }
@@ -106,16 +109,28 @@ namespace DeskStreamer
         {
             try
             {
+                int cyclesCount = 0;
+                System.Timers.Timer timer = new System.Timers.Timer(1000);
+                timer.Elapsed += (sender, args) =>
+                {
+                    main.cycleSpeedReceive.Text = cyclesCount.ToString();
+                    cyclesCount = 0;
+                };
+                timer.Enabled = true;
                 while (true)
                 {
+                    
                     Socket pipeListener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                     pipeListener.Bind(new IPEndPoint(localIP, 4578));
                     pipeListener.Listen(10);
                     pipe = pipeListener.Accept();
-
+                    //int startTime = DateTime.Now.Millisecond;
                     while (pipe.Connected)
                     {
-                        Thread.Sleep(10);
+                        cyclesCount++;
+                        //main.cycleSpeedReceive.Text = (DateTime.Now.Millisecond - startTime).ToString();
+                        //startTime = DateTime.Now.Millisecond;
+                        //Thread.Sleep(10);
                         int bytes = 0;
                         byte[] data = new byte[30000];
                         do
@@ -127,8 +142,10 @@ namespace DeskStreamer
                             object imgData = Serializer.BytesToObj(data, bytes);
                             if (!(imgData is ImageStreamPart)) throw new Exception("Wrong data!");
                             data = (imgData as ImageStreamPart).bitmap;
-                                strWin.img.Pixbuf = new Gdk.Pixbuf(data);
-                                strWin.ShowAll();
+                            //decompressing
+                            byte[] decompressedImage = new byte[(imgData as ImageStreamPart).originalSize];
+                            LZ4Codec.Decode(data, decompressedImage);
+                                strWin.img.Pixbuf = new Gdk.Pixbuf(decompressedImage);
 
                             if (disconnectRequest)
                             {
@@ -148,14 +165,14 @@ namespace DeskStreamer
                         }
                         catch (Exception e1)
                         {
-                            ConsoleLogic.WriteConsole("Error at converting received data", e1);
+                            ConsoleLogic.WriteConsole("Error at converting received data");
                         }
                     }
                 }
             }
             catch (Exception e)
             {
-                ConsoleLogic.WriteConsole("error at listenLoop", e);
+                ConsoleLogic.WriteConsole("error at DataListenLoop");
             }
         }
 
@@ -188,14 +205,14 @@ namespace DeskStreamer
                         ConsoleLogic.WriteConsole("Connection request from " +
                             (obj as ConnectionRequest).IPAdress);
                         incomingConnection.Send(Serializer.ObjectToBytes(new ConnectionResponse()));
-                        Thread thr1 = new Thread(()=>Stream((obj as ConnectionRequest).IPAdress));
+                        Task thr1 = new Task(()=>Stream((obj as ConnectionRequest).IPAdress));
                         thr1.Start();
                     }
                 }
             }
             catch(Exception e)
             {
-                ConsoleLogic.WriteConsole("error at listenLoop", e);
+                ConsoleLogic.WriteConsole("error at CommandListenLoop", e);
             }
             
         }
@@ -205,6 +222,7 @@ namespace DeskStreamer
         private static void Stream(string ip)
         {
             Thread.Sleep(300);
+            int miliseconds = DateTime.Now.Millisecond;
             pipe = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             bool connected = false;
             while(!connected)
@@ -217,14 +235,46 @@ namespace DeskStreamer
                 }
                 catch(Exception e)
                 {
-
+                    ConsoleLogic.WriteConsole("error at connecting back to receiver");
                 }
             }
             //performSearch = false;
+            int cyclesCount = 0;
+            int fps = 0;
+            int sleepTime = 0;
+
+            System.Timers.Timer timer = new System.Timers.Timer(1000);
+            timer.Elapsed += (sender, args)=>
+                {
+                    main.cycleSpeedSend.Text = cyclesCount.ToString();
+                    fps = cyclesCount;
+                    sleepTime = (int)(1000 / (((main.FPS.Value - fps) / 60) * 1000));
+                    main.thrSleepTime.Text = sleepTime.ToString();
+                    cyclesCount = 0;
+                };
+            timer.Enabled = true;
+            Bitmap prevImage = null;
             while(true)
             {
                 try
                 {
+                    cyclesCount++;
+                    //while((DateTime.Now.Millisecond - miliseconds) <= 1000/main.FPS.Value)
+                    //{
+                    //    Thread.Sleep(1);
+                    //}
+                    //miliseconds = DateTime.Now.Millisecond;
+                    if(fps < main.FPS.Value)
+                    {
+                        if(main.FPS.Value - fps > 20)
+                        {
+                        }
+                        else
+                        {
+                            Thread.Sleep((int)(1000 / (((main.FPS.Value - fps)/ 60) * 1000)));
+                        }
+                    }
+                    else { }
                     if (!pipe.Connected)
                     {
                         //searchTask.Start();
@@ -232,12 +282,17 @@ namespace DeskStreamer
                     }
                     int sqrSize = (int)main.strImgSize.Value;
                     
-                    Bitmap memoryImage = new Bitmap(sqrSize, sqrSize);
+                    Bitmap memoryImage = new Bitmap(sqrSize, sqrSize/*, PixelFormat.Format8bppIndexed*/);
                     Size s = new Size(sqrSize, sqrSize);
                     Graphics memoryGraphics = Graphics.FromImage(memoryImage);
                     memoryGraphics.CopyFromScreen(0, 0, 0, 0, s);
+                    //Comparison
+                    if(prevImage != null)
+                    {
+                       memoryImage = GetDifferences(prevImage, memoryImage, Color.Pink);
+                    }
+                    prevImage = memoryImage;
                     //Compress
-                    byte[] dataToSend;
                     using (var stream = new MemoryStream())
                     {
                         EncoderParameter qualityParam = new EncoderParameter(Encoder.Quality, (long)main.strImgCompression.Value);
@@ -249,11 +304,16 @@ namespace DeskStreamer
                         parameters.Param[0] = qualityParam;
                         parameters.Param[1] = colorDepthParam;
                         parameters.Param[2] = compressionParam;
+                        //
                         memoryImage.Save(stream, imageCodec, parameters);
 
-                        dataToSend = stream.ToArray();
+                        byte[] compressedData = new byte[LZ4Codec.MaximumOutputSize((int)stream.Length)];
+
+                        LZ4Codec.Encode(stream.GetBuffer(), compressedData, LZ4Level.L12_MAX);
+
                         main.dataAmount.Text = stream.Length.ToString();
-                        pipe.Send(Serializer.ObjectToBytes(new ImageStreamPart(dataToSend, (long)main.strImgCompression.Value)));
+                        main.compressedDataAmount.Text = compressedData.Length.ToString();
+                        pipe.Send(Serializer.ObjectToBytes(new ImageStreamPart(compressedData, stream.Length)));
                     }
                     //using (var stream = new MemoryStream())
                     //{
@@ -263,7 +323,7 @@ namespace DeskStreamer
 
                     memoryImage.Dispose();
                     memoryGraphics.Dispose();
-                    Thread.Sleep(30);
+                    //Thread.Sleep(30);
                     //Fix large bitmap size
                     //Serializer.ObjectToBytes(
                     //    new ImageConverter().ConvertTo(
@@ -276,59 +336,123 @@ namespace DeskStreamer
                 }
             }
         }
-
-        private static Image GetCompressedBitmap(Bitmap bmp, long quality)
+        
+        private static unsafe Bitmap GetDifferences(Bitmap image1, Bitmap image2, Color matchColor)
         {
-            using (var mss = new MemoryStream())
+            if (image1 == null | image2 == null)
+                return null;
+
+            if (image1.Height != image2.Height || image1.Width != image2.Width)
+                return null;
+
+            Bitmap diffImage = image2.Clone() as Bitmap;
+
+            int height = image1.Height;
+            int width = image1.Width;
+
+            BitmapData data1 = image1.LockBits(new Rectangle(0, 0, width, height),
+                                               ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+            BitmapData data2 = image2.LockBits(new Rectangle(0, 0, width, height),
+                                               ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+            BitmapData diffData = diffImage.LockBits(new Rectangle(0, 0, width, height),
+                                                   ImageLockMode.WriteOnly, PixelFormat.Format24bppRgb);
+
+            byte* data1Ptr = (byte*)data1.Scan0;
+            byte* data2Ptr = (byte*)data2.Scan0;
+            byte* diffPtr = (byte*)diffData.Scan0;
+
+            byte[] swapColor = new byte[3];
+            swapColor[0] = matchColor.B;
+            swapColor[1] = matchColor.G;
+            swapColor[2] = matchColor.R;
+
+            int rowPadding = data1.Stride - (image1.Width * 3);
+
+            // iterate over height (rows)
+            for (int i = 0; i < height; i++)
             {
-                EncoderParameter qualityParam = new EncoderParameter(Encoder.Quality, quality);
-                ImageCodecInfo imageCodec = ImageCodecInfo.GetImageEncoders().FirstOrDefault(o => o.FormatID == ImageFormat.Jpeg.Guid);
-                EncoderParameters parameters = new EncoderParameters(1);
-                parameters.Param[0] = qualityParam;
-                bmp.Save(mss, imageCodec, parameters);
-                return Image.FromStream(mss);
+                // iterate over width (columns)
+                for (int j = 0; j < width; j++)
+                {
+                    int same = 0;
+
+                    byte[] tmp = new byte[3];
+
+                    // compare pixels and copy new values into temporary array
+                    for (int x = 0; x < 3; x++)
+                    {
+                        tmp[x] = data2Ptr[0];
+                        if (data1Ptr[0] == data2Ptr[0])
+                        {
+                            same++;
+                        }
+                        data1Ptr++; // advance image1 ptr
+                        data2Ptr++; // advance image2 ptr
+                    }
+
+                    // swap color or add new values
+                    for (int x = 0; x < 3; x++)
+                    {
+                        diffPtr[0] = (same == 3) ? swapColor[x] : tmp[x];
+                        diffPtr++; // advance diff image ptr
+                    }
+                }
+
+                // at the end of each column, skip extra padding
+                if (rowPadding > 0)
+                {
+                    data1Ptr += rowPadding;
+                    data2Ptr += rowPadding;
+                    diffPtr += rowPadding;
+                }
             }
+
+            image1.UnlockBits(data1);
+            image2.UnlockBits(data2);
+            diffImage.UnlockBits(diffData);
+
+            return diffImage;
         }
 
         private static void ConnectionCheckLoop()
         {
-            main.connectionStatus.Pixbuf = new Gdk.Pixbuf("red.jpg");
-            while (pipe == null)
-            {
-                Thread.Sleep(100);
-            }
-            bool status = false;
-            status = pipe.Connected;
-            if (pipe.Connected)
-                main.connectionStatus.Pixbuf = new Gdk.Pixbuf("green.jpg");
-            else
-                main.connectionStatus.Pixbuf = new Gdk.Pixbuf("red.jpg");
-            while (true)
-            {
-                if(pipe != null)
-                {
-                    if (pipe.Connected && status == false)
-                    {
-                        main.connectionStatus.Pixbuf = new Gdk.Pixbuf("green.jpg");
-                        status = true;
-                    }
-                    else if (!pipe.Connected && status == true)
-                    {
-                        main.connectionStatus.Pixbuf = new Gdk.Pixbuf("red.jpg");
-                        status = false;
-                        if (discBtn != null)
-                            HideConnectionControls();
-                    }
-                }
-                else if(pipe == null && status == true)
-                {
-                    status = false;
-                    main.connectionStatus.Pixbuf = new Gdk.Pixbuf("red.jpg");
-                    if (discBtn != null)
-                        HideConnectionControls();
-                }
-                Thread.Sleep(50);
-            }
+            //main.connectionStatus.Pixbuf = new Gdk.Pixbuf("red.jpg");
+            //while (pipe == null)
+            //{
+            //    Thread.Sleep(100);
+            //}
+            //bool status = false;
+            //status = pipe.Connected;
+            //if (pipe.Connected)
+            //    main.connectionStatus.Pixbuf = new Gdk.Pixbuf("green.jpg");
+            //else
+            //    main.connectionStatus.Pixbuf = new Gdk.Pixbuf("red.jpg");
+            //while (true)
+            //{
+            //    if(pipe != null)
+            //    {
+            //        if (pipe.Connected && status == false)
+            //        {
+            //            main.connectionStatus.Pixbuf = new Gdk.Pixbuf("green.jpg");
+            //            status = true;
+            //        }
+            //        else if (!pipe.Connected && status == true)
+            //        {
+            //            main.connectionStatus.Pixbuf = new Gdk.Pixbuf("red.jpg");
+            //            status = false;
+            //            if (discBtn != null)
+            //                HideConnectionControls();
+            //        }
+            //    }
+            //    else if(pipe == null && status == true)
+            //    {
+            //        status = false;
+            //        main.connectionStatus.Pixbuf = new Gdk.Pixbuf("red.jpg");
+            //        if (discBtn != null)
+            //            HideConnectionControls();
+            //    }
+            //    Thread.Sleep(50);
+            //}
         }
 
         private static void HideConnectionControls()
