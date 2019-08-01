@@ -145,6 +145,7 @@ namespace DeskStreamer
                             //decompressing
                             byte[] decompressedImage = new byte[(imgData as ImageStreamPart).originalSize];
                             LZ4Codec.Decode(data, decompressedImage);
+                            
                                 strWin.img.Pixbuf = new Gdk.Pixbuf(decompressedImage);
 
                             if (disconnectRequest)
@@ -287,11 +288,23 @@ namespace DeskStreamer
                     Graphics memoryGraphics = Graphics.FromImage(memoryImage);
                     memoryGraphics.CopyFromScreen(0, 0, 0, 0, s);
                     //Comparison
-                    if(prevImage != null)
+
+                    if (prevImage != null)
                     {
-                       memoryImage = GetDifferences(prevImage, memoryImage, Color.Pink);
+                        if (prevImage.Height == memoryImage.Height)
+                        {
+
+                            Bitmap prevHolder = memoryImage.Clone() as Bitmap;
+                            memoryImage = GetDifferences(prevImage, memoryImage, Color.Pink);
+                            prevImage.Dispose();
+                            prevImage = prevHolder;
+                            //memoryImage.MakeTransparent(Color.Pink);
+                        }
+                        else
+                            prevImage = memoryImage.Clone() as Bitmap;
                     }
-                    prevImage = memoryImage.Clone() as Bitmap;
+                    else
+                        prevImage = memoryImage.Clone() as Bitmap;
                     //Compress
                     using (var stream = new MemoryStream())
                     {
@@ -313,6 +326,7 @@ namespace DeskStreamer
 
                         main.dataAmount.Text = stream.Length.ToString();
                         main.compressedDataAmount.Text = compressedData.Length.ToString();
+                        if (compressedData.Length > 15000) continue;
                         pipe.Send(Serializer.ObjectToBytes(new ImageStreamPart(compressedData, stream.Length)));
                     }
                     //using (var stream = new MemoryStream())
