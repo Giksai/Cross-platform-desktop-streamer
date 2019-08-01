@@ -291,7 +291,7 @@ namespace DeskStreamer
                     {
                        memoryImage = GetDifferences(prevImage, memoryImage, Color.Pink);
                     }
-                    prevImage = memoryImage;
+                    prevImage = memoryImage.Clone() as Bitmap;
                     //Compress
                     using (var stream = new MemoryStream())
                     {
